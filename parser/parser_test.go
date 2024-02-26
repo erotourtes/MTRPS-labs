@@ -40,12 +40,12 @@ func TestBoldShouldFail(t *testing.T) {
 		t.Errorf("Expected error, got nil")
 	}
 }
-func TestBoldShouldFail2(t *testing.T) {
+func TestBoldShouldNotFail(t *testing.T) {
 	content := "*world**"
 	parser := MarkdownParserInit(content)
 	err := parser.Parse()
-	if err == nil {
-		t.Errorf("Expected error, got nil")
+	if err != nil {
+		t.Errorf("Expected nil, got %s", err)
 	}
 }
 

@@ -76,28 +76,25 @@ func isLineBreak(line string) bool {
 	return len(strings.TrimSpace(line)) == 0
 }
 
-func isStartOfBold(runes []rune) bool {
-	if len(runes) < 2 {
+func isStartOf(str string, runes []rune) bool {
+	if len(runes) < len(str) {
 		return false
 	}
 
-	return runes[0] == '*' && runes[1] == '*' && (len(runes) == 2 || unicode.IsLetter(runes[2]))
+	runesStr := string(runes)
+	return strings.HasPrefix(runesStr, str) && (len(runes) > len(str) && unicode.IsLetter(runes[len(str)]))
+}
+
+func isStartOfBold(runes []rune) bool {
+	return isStartOf("**", runes)
 }
 
 func isStartOfItalic(runes []rune) bool {
-	if len(runes) < 2 {
-		return false
-	}
-
-	return runes[0] == '_' && unicode.IsLetter(runes[1])
+	return isStartOf("_", runes)
 }
 
 func isStartOfMonospace(runes []rune) bool {
-	if len(runes) < 2 {
-		return false
-	}
-
-	return runes[0] == '`' && unicode.IsLetter(runes[1])
+	return isStartOf("`", runes)
 }
 
 func (m *MarkdownParser) parseTilda(runes []rune, lineIdx int, startOffset int) (int, error) {
