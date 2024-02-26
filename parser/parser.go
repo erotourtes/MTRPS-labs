@@ -55,15 +55,14 @@ func (m *MarkdownParser) Parse() error {
 		line := m.curLine()
 		runes := m.curLineRunes()
 		for m.pos.col < len(runes) {
-			curIdx := m.pos.col
 			var err error
-			if isStartOfPreformatted(runes[curIdx:]) {
+			if m.isStartOfPreformatted() {
 				err = m.parsePreformatted()
-			} else if isStartOfBold(runes[curIdx:]) {
+			} else if m.isStartOfBold() {
 				err = m.parseStar(runes)
-			} else if isStartOfItalic(runes[curIdx:]) {
+			} else if m.isStartOfItalic() {
 				err = m.parseUnderscore(runes)
-			} else if isStartOfMonospace(runes[curIdx:]) {
+			} else if m.isStartOfMonospace() {
 				err = m.parseTilda(runes)
 			} else {
 				m.parseText(runes)
@@ -105,19 +104,23 @@ func isStartOf(str string, runes []rune) bool {
 	return strings.HasPrefix(runesStr, str) && (len(runes) > len(str) && unicode.IsLetter(runes[len(str)]))
 }
 
-func isStartOfBold(runes []rune) bool {
+func (m *MarkdownParser) isStartOfBold() bool {
+	runes := m.curLineRunes()[m.pos.col:]
 	return isStartOf("**", runes)
 }
 
-func isStartOfItalic(runes []rune) bool {
+func (m *MarkdownParser) isStartOfItalic() bool {
+	runes := m.curLineRunes()[m.pos.col:]
 	return isStartOf("_", runes)
 }
 
-func isStartOfMonospace(runes []rune) bool {
+func (m *MarkdownParser) isStartOfMonospace() bool {
+	runes := m.curLineRunes()[m.pos.col:]
 	return isStartOf("`", runes)
 }
 
-func isStartOfPreformatted(runes []rune) bool {
+func (m *MarkdownParser) isStartOfPreformatted() bool {
+	runes := m.curLineRunes()[m.pos.col:]
 	return strings.HasPrefix(string(runes), "```")
 }
 
