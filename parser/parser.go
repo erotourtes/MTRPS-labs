@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	bold = "b"
-	text = "text"
+	bold      = "b"
+	text      = "text"
+	lineBreak = "lineBreak"
 )
 
 type node struct {
@@ -41,9 +42,24 @@ func (m *MarkdownParser) Parse() error {
 				curIdx = m.parseText(runes, lineIdx, curIdx)
 			}
 		}
+
+		if isLineBreak(line) {
+			l := len(m.nodes)
+			if l > 0 && m.nodes[l-1].nodeType == lineBreak {
+				continue
+			}
+			m.nodes = append(m.nodes, node{value: "", nodeType: lineBreak})
+		}
 	}
 
 	return nil
+}
+
+func isLineBreak(line string) bool {
+	if strings.HasSuffix(line, "  ") {
+		return true
+	}
+	return len(strings.TrimSpace(line)) == 0
 }
 
 func isStartOfBold(runes []rune) bool {
