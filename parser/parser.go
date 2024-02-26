@@ -93,13 +93,13 @@ func (m *MarkdownParser) Parse() *ParserError {
 			case m.isStartOfPreformatted():
 				err = m.parsePreformatted()
 			case m.isStartOfBold():
-				err = m.parseStar(runes)
+				err = m.parseStar()
 			case m.isStartOfItalic():
-				err = m.parseUnderscore(runes)
+				err = m.parseUnderscore()
 			case m.isStartOfMonospace():
-				err = m.parseTilda(runes)
+				err = m.parseTilda()
 			default:
-				m.parseText(runes)
+				m.parseText()
 			}
 			if err != nil {
 				return err
@@ -159,7 +159,8 @@ func (m *MarkdownParser) isStartOfPreformatted() bool {
 	return strings.HasPrefix(string(runes), "```")
 }
 
-func (m *MarkdownParser) parseTilda(runes []rune) *ParserError {
+func (m *MarkdownParser) parseTilda() *ParserError {
+	runes := m.curLineRunes()
 	start := m.getCol() + 1 // skip the first tilda
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
@@ -177,7 +178,8 @@ func (m *MarkdownParser) parseTilda(runes []rune) *ParserError {
 	return m.error("No closing ` found")
 }
 
-func (m *MarkdownParser) parseStar(runes []rune) *ParserError {
+func (m *MarkdownParser) parseStar() *ParserError {
+	runes := m.curLineRunes()
 	start := m.getCol() + 2 // skip the first two stars
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
@@ -195,7 +197,8 @@ func (m *MarkdownParser) parseStar(runes []rune) *ParserError {
 	return m.error("No closing ** found")
 }
 
-func (m *MarkdownParser) parseUnderscore(runes []rune) *ParserError {
+func (m *MarkdownParser) parseUnderscore() *ParserError {
+	runes := m.curLineRunes()
 	start := m.getCol() + 1 // skip the first underscore
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
@@ -213,7 +216,8 @@ func (m *MarkdownParser) parseUnderscore(runes []rune) *ParserError {
 	return m.error("No closing _ found")
 }
 
-func (m *MarkdownParser) parseText(runes []rune) {
+func (m *MarkdownParser) parseText() {
+	runes := m.curLineRunes()
 	startOffset := m.getCol()
 	for i := startOffset; i < len(runes); i++ {
 		ch := runes[i]
