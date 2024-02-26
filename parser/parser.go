@@ -7,11 +7,12 @@ import (
 )
 
 const (
-	bold      = "b"
-	text      = "text"
-	lineBreak = "lineBreak"
-	italic    = "i"
-	monospace = "tt"
+	bold         = "b"
+	text         = "text"
+	lineBreak    = "lineBreak"
+	italic       = "i"
+	monospace    = "tt"
+	preformatted = "pre"
 )
 
 type node struct {
@@ -34,7 +35,13 @@ func (m *MarkdownParser) Parse() error {
 		runes := []rune(line)
 		curIdx := 0
 		for curIdx < len(runes) {
-			if isStartOfBold(runes[curIdx:]) {
+			if isStartOfPreformatted(runes[curIdx:]) {
+				newLine, err := m.parsePreformatted(lineIdx)
+				if err != nil {
+					return err
+				}
+				lineIdx = newLine
+			} else if isStartOfBold(runes[curIdx:]) {
 				offset, err := m.parseStar(runes, lineIdx, curIdx)
 				if err != nil {
 					return err
@@ -76,6 +83,9 @@ func isLineBreak(line string) bool {
 	return len(strings.TrimSpace(line)) == 0
 }
 
+/*
+Helper function to check if the given string is the start of the md syntax
+*/
 func isStartOf(str string, runes []rune) bool {
 	if len(runes) < len(str) {
 		return false
@@ -95,6 +105,10 @@ func isStartOfItalic(runes []rune) bool {
 
 func isStartOfMonospace(runes []rune) bool {
 	return isStartOf("`", runes)
+}
+
+func isStartOfPreformatted(runes []rune) bool {
+	return strings.HasPrefix(string(runes), "```")
 }
 
 func (m *MarkdownParser) parseTilda(runes []rune, lineIdx int, startOffset int) (int, error) {
@@ -159,4 +173,26 @@ func (m *MarkdownParser) parseText(runes []rune, lineIdx int, startOffset int) i
 
 	m.nodes = append(m.nodes, node{value: string(runes[startOffset:]), nodeType: text})
 	return len(runes)
+}
+
+func (m *MarkdownParser) parsePreformatted(lineIdx int) (int, error) {
+	line := m.input[lineIdx]
+	if len(line) < 3 {
+		return 0, fmt.Errorf("invalid preformatted block at line %d", lineIdx+1)
+	}
+
+	for i := lineIdx + 1; i < len(m.input); i++ {
+		line = m.input[i]
+		if strings.HasPrefix(line, "```") {
+			if len(line) > 3 {
+				return 0, fmt.Errorf("invalid preformatted block at line %d", i+1)
+			}
+			m.nodes = append(
+				m.nodes,
+				node{value: strings.Join(m.input[lineIdx+1:i], "\n"), nodeType: preformatted})
+			return i, nil
+		}
+	}
+
+	return 0, fmt.Errorf("no closing ``` found at line %d", lineIdx+1)
 }

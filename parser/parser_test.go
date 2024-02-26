@@ -152,3 +152,28 @@ func TestMonospaceSimple(t *testing.T) {
 		t.Errorf("Expected monospace, got %s", parser.nodes[1].nodeType)
 	}
 }
+
+func TestPreformattedSimple(t *testing.T) {
+	content :=
+		"```\n**Hello world**\n```"
+	parser := MarkdownParserInit(content)
+	parser.Parse()
+
+	n0 := parser.nodes[0]
+	if n0.value != "**Hello world**" {
+		t.Errorf("Expected **Hello world**, got %s", parser.nodes[0].value)
+	}
+
+	if n0.nodeType != preformatted {
+		t.Errorf("Expected preformatted, got %s", parser.nodes[0].nodeType)
+	}
+}
+
+func TestPreformattedShouldFail(t *testing.T) {
+	content := "```\n**Hello world**"
+	parser := MarkdownParserInit(content)
+	err := parser.Parse()
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+}
