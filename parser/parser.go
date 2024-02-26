@@ -30,12 +30,12 @@ type MarkdownParser struct {
 	}
 }
 
-func (m *MarkdownParser) curLine() string {
+func (m *MarkdownParser) curStrLine() string {
 	return m.input[m.pos.line]
 }
 
 func (m *MarkdownParser) curLineRunes() []rune {
-	return []rune(m.curLine())
+	return []rune(m.curStrLine())
 }
 
 func (m *MarkdownParser) lastNodeType() string {
@@ -46,15 +46,34 @@ func (m *MarkdownParser) lastNodeType() string {
 	return m.nodes[l-1].nodeType
 }
 
+func (m *MarkdownParser) getLine() int {
+	return m.pos.line
+}
+
+func (m *MarkdownParser) getCol() int {
+	return m.pos.col
+}
+
+func (m *MarkdownParser) setLine(line int) {
+	m.pos.line = line
+}
+
+func (m *MarkdownParser) setCol(col int) {
+	m.pos.col = col
+}
+
+func (m *MarkdownParser) incrementLine() {
+	m.pos.line++
+}
+
 func MarkdownParserInit(input string) *MarkdownParser {
 	return &MarkdownParser{input: strings.Split(input, "\n"), nodes: []node{}}
 }
 
 func (m *MarkdownParser) Parse() error {
-	for ; m.pos.line < len(m.input); m.pos.line++ {
-		line := m.curLine()
+	for ; m.getLine() < len(m.input); m.incrementLine() {
 		runes := m.curLineRunes()
-		for m.pos.col < len(runes) {
+		for m.getCol() < len(runes) {
 			var err error
 			switch true {
 			case m.isStartOfPreformatted():
@@ -73,9 +92,9 @@ func (m *MarkdownParser) Parse() error {
 			}
 		}
 
-		m.pos.col = 0
+		m.setCol(0)
 
-		if isLineBreak(line) {
+		if m.isLineBreak() {
 			if m.lastNodeType() == lineBreak {
 				continue
 			}
@@ -86,7 +105,8 @@ func (m *MarkdownParser) Parse() error {
 	return nil
 }
 
-func isLineBreak(line string) bool {
+func (m *MarkdownParser) isLineBreak() bool {
+	line := m.curStrLine()
 	if strings.HasSuffix(line, "  ") {
 		return true
 	}
@@ -106,111 +126,103 @@ func isStartOf(str string, runes []rune) bool {
 }
 
 func (m *MarkdownParser) isStartOfBold() bool {
-	runes := m.curLineRunes()[m.pos.col:]
+	runes := m.curLineRunes()[m.getCol():]
 	return isStartOf("**", runes)
 }
 
 func (m *MarkdownParser) isStartOfItalic() bool {
-	runes := m.curLineRunes()[m.pos.col:]
+	runes := m.curLineRunes()[m.getCol():]
 	return isStartOf("_", runes)
 }
 
 func (m *MarkdownParser) isStartOfMonospace() bool {
-	runes := m.curLineRunes()[m.pos.col:]
+	runes := m.curLineRunes()[m.getCol():]
 	return isStartOf("`", runes)
 }
 
 func (m *MarkdownParser) isStartOfPreformatted() bool {
-	runes := m.curLineRunes()[m.pos.col:]
+	runes := m.curLineRunes()[m.getCol():]
 	return strings.HasPrefix(string(runes), "```")
 }
 
 func (m *MarkdownParser) parseTilda(runes []rune) error {
-	lineIdx := m.pos.line
-	startOffset := m.pos.col
-
-	start := startOffset + 1 // skip the first tilda
+	start := m.getCol() + 1 // skip the first tilda
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
 		if ch == '`' {
 			m.nodes = append(m.nodes, node{value: string(runes[start:i]), nodeType: monospace})
-			m.pos.col = i + 1
+			m.setCol(i + 1)
 			return nil
 		}
 
 		if !unicode.IsLetter(ch) && ch != ' ' {
-			return fmt.Errorf("Invalid character in ` at line %d, %d ", lineIdx+1, i)
+			return fmt.Errorf("invalid character in ` at line")
 		}
 	}
 
-	return fmt.Errorf("no closing ` found at line %d, %d", lineIdx+1, startOffset)
+	return fmt.Errorf("no closing ` found at line")
 }
 
 func (m *MarkdownParser) parseStar(runes []rune) error {
-	lineIdx := m.pos.line
-	startOffset := m.pos.col
-
-	start := startOffset + 2 // skip the first two stars
+	start := m.getCol() + 2 // skip the first two stars
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
 		if ch == '*' && runes[i+1] == '*' {
 			m.nodes = append(m.nodes, node{value: string(runes[start:i]), nodeType: bold})
-			m.pos.col = i + 2
+			m.setCol(i + 2)
 			return nil
 		}
 
 		if !unicode.IsLetter(ch) && ch != ' ' {
-			return fmt.Errorf("Invalid character in ** at line %d, %d ", lineIdx+1, i)
+			return fmt.Errorf("Invalid character in ** at line")
 		}
 	}
 
-	return fmt.Errorf("no closing ** found at line %d, %d", lineIdx+1, startOffset)
+	return fmt.Errorf("no closing ** found at line")
 }
 
 func (m *MarkdownParser) parseUnderscore(runes []rune) error {
-	lineIdx := m.pos.line
-	startOffset := m.pos.col
-
-	start := startOffset + 1 // skip the first underscore
+	start := m.getCol() + 1 // skip the first underscore
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
 		if ch == '_' {
 			m.nodes = append(m.nodes, node{value: string(runes[start:i]), nodeType: italic})
-			m.pos.col = i + 1
+			m.setCol(i + 1)
 			return nil
 		}
 
 		if !unicode.IsLetter(ch) && ch != ' ' {
-			return fmt.Errorf("Invalid character in ** at line %d, %d ", lineIdx+1, i)
+			return fmt.Errorf("Invalid character in ** at line")
 		}
 	}
 
-	return fmt.Errorf("no closing ** found at line %d, %d", lineIdx+1, startOffset)
+	return fmt.Errorf("no closing ** found at line")
 }
 
 func (m *MarkdownParser) parseText(runes []rune) {
-	startOffset := m.pos.col
+	startOffset := m.getCol()
 	for i := startOffset; i < len(runes); i++ {
 		ch := runes[i]
 		if i != startOffset && !unicode.IsLetter(ch) && ch != ' ' {
 			m.nodes = append(m.nodes, node{value: string(runes[startOffset:i]), nodeType: text})
-			m.pos.col = i
+			m.setCol(i)
 			return
 		}
 	}
 
 	m.nodes = append(m.nodes, node{value: string(runes[startOffset:]), nodeType: text})
-	m.pos.col = len(runes)
+	m.setCol(len(runes))
 }
 
 func (m *MarkdownParser) parsePreformatted() error {
-	lineIdx := m.pos.line
+	lineIdx := m.getLine()
 	line := m.input[lineIdx]
 	if len(line) < 3 {
-		return fmt.Errorf("invalid preformatted block at line %d", lineIdx+1)
+		return fmt.Errorf("invalid preformatted block at line")
 	}
 
-	for i := lineIdx + 1; i < len(m.input); i++ {
+	for i := m.getLine() + 1; i < len(m.input); i++ {
+		m.setLine(i)
 		line = m.input[i]
 		if strings.HasPrefix(line, "```") {
 			if len(line) > 3 {
@@ -219,7 +231,7 @@ func (m *MarkdownParser) parsePreformatted() error {
 			m.nodes = append(
 				m.nodes,
 				node{value: strings.Join(m.input[lineIdx+1:i], "\n"), nodeType: preformatted})
-			m.pos.line = i
+			m.setLine(i)
 			return nil
 		}
 	}
