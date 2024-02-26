@@ -1,7 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"mainmod/parser"
+)
 
 func main() {
-    fmt.Println("Hello, World!")
+	// const path = "./README.md"
+	// content, _ := getMDContentFrom(path)
+	content := "Hello **world**"
+	parser := parser.MarkdownParserInit(content)
+	parser.Parse()
+
+	fmt.Println(content)
 }
