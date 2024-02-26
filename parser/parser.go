@@ -2,9 +2,12 @@ package parser
 
 import (
 	"fmt"
+	"mainmod/renderer"
 	"strings"
 	"unicode"
 )
+
+type Node = renderer.Node
 
 const (
 	bold         = "b"
@@ -14,11 +17,6 @@ const (
 	monospace    = "tt"
 	preformatted = "pre"
 )
-
-type node struct {
-	value    string
-	nodeType string
-}
 
 type ParserError struct {
 	line int
@@ -32,7 +30,7 @@ func (p *ParserError) Error() string {
 
 type MarkdownParser struct {
 	input []string
-	nodes []node
+	nodes []Node
 
 	pos struct {
 		line int
@@ -53,7 +51,7 @@ func (m *MarkdownParser) lastNodeType() string {
 	if l == 0 {
 		return ""
 	}
-	return m.nodes[l-1].nodeType
+	return m.nodes[l-1].Type
 }
 
 func (m *MarkdownParser) getLine() int {
@@ -77,7 +75,7 @@ func (m *MarkdownParser) incrementLine() {
 }
 
 func MarkdownParserInit(input string) *MarkdownParser {
-	return &MarkdownParser{input: strings.Split(input, "\n"), nodes: []node{}}
+	return &MarkdownParser{input: strings.Split(input, "\n"), nodes: []Node{}}
 }
 
 func (m *MarkdownParser) error(msg string) *ParserError {
@@ -112,7 +110,7 @@ func (m *MarkdownParser) Parse() *ParserError {
 			if m.lastNodeType() == lineBreak {
 				continue
 			}
-			m.nodes = append(m.nodes, node{value: "", nodeType: lineBreak})
+			m.nodes = append(m.nodes, Node{Val: "", Type: lineBreak})
 		}
 	}
 
@@ -165,7 +163,7 @@ func (m *MarkdownParser) parseTilda() *ParserError {
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
 		if ch == '`' {
-			m.nodes = append(m.nodes, node{value: string(runes[start:i]), nodeType: monospace})
+			m.nodes = append(m.nodes, Node{Val: string(runes[start:i]), Type: monospace})
 			m.setCol(i + 1)
 			return nil
 		}
@@ -184,7 +182,7 @@ func (m *MarkdownParser) parseStar() *ParserError {
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
 		if ch == '*' && runes[i+1] == '*' {
-			m.nodes = append(m.nodes, node{value: string(runes[start:i]), nodeType: bold})
+			m.nodes = append(m.nodes, Node{Val: string(runes[start:i]), Type: bold})
 			m.setCol(i + 2)
 			return nil
 		}
@@ -203,7 +201,7 @@ func (m *MarkdownParser) parseUnderscore() *ParserError {
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
 		if ch == '_' {
-			m.nodes = append(m.nodes, node{value: string(runes[start:i]), nodeType: italic})
+			m.nodes = append(m.nodes, Node{Val: string(runes[start:i]), Type: italic})
 			m.setCol(i + 1)
 			return nil
 		}
@@ -222,13 +220,13 @@ func (m *MarkdownParser) parseText() {
 	for i := startOffset; i < len(runes); i++ {
 		ch := runes[i]
 		if i != startOffset && !unicode.IsLetter(ch) && ch != ' ' {
-			m.nodes = append(m.nodes, node{value: string(runes[startOffset:i]), nodeType: text})
+			m.nodes = append(m.nodes, Node{Val: string(runes[startOffset:i]), Type: text})
 			m.setCol(i)
 			return
 		}
 	}
 
-	m.nodes = append(m.nodes, node{value: string(runes[startOffset:]), nodeType: text})
+	m.nodes = append(m.nodes, Node{Val: string(runes[startOffset:]), Type: text})
 	m.setCol(len(runes))
 }
 
@@ -247,7 +245,7 @@ func (m *MarkdownParser) parsePreformatted() *ParserError {
 			}
 			m.nodes = append(
 				m.nodes,
-				node{value: strings.Join(m.input[lineIdx+1:i], "\n"), nodeType: preformatted})
+				Node{Val: strings.Join(m.input[lineIdx+1:i], "\n"), Type: preformatted})
 			m.setLine(i)
 			return nil
 		}

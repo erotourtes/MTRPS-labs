@@ -14,21 +14,21 @@ func TestBoldSimple(t *testing.T) {
 	}
 
 	n0 := parser.nodes[0]
-	if n0.value != "Hello " {
-		t.Errorf("Expected Hello, got %s", parser.nodes[0].value)
+	if n0.Val != "Hello " {
+		t.Errorf("Expected Hello, got %s", parser.nodes[0].Val)
 	}
 
-	if n0.nodeType != text {
-		t.Errorf("Expected text, got %s", parser.nodes[0].nodeType)
+	if n0.Type != text {
+		t.Errorf("Expected text, got %s", parser.nodes[0].Type)
 	}
 
 	n1 := parser.nodes[1]
-	if n1.value != "world" {
-		t.Errorf("Expected world, got %s", parser.nodes[1].value)
+	if n1.Val != "world" {
+		t.Errorf("Expected world, got %s", parser.nodes[1].Val)
 	}
 
-	if n1.nodeType != bold {
-		t.Errorf("Expected bold, got %s", parser.nodes[1].nodeType)
+	if n1.Type != bold {
+		t.Errorf("Expected bold, got %s", parser.nodes[1].Type)
 	}
 }
 
@@ -89,21 +89,21 @@ func TestItalicSimple(t *testing.T) {
 	}
 
 	n0 := parser.nodes[0]
-	if n0.value != "Hello " {
-		t.Errorf("Expected Hello, got %s", parser.nodes[0].value)
+	if n0.Val != "Hello " {
+		t.Errorf("Expected Hello, got %s", parser.nodes[0].Val)
 	}
 
-	if n0.nodeType != text {
-		t.Errorf("Expected text, got %s", parser.nodes[0].nodeType)
+	if n0.Type != text {
+		t.Errorf("Expected text, got %s", parser.nodes[0].Type)
 	}
 
 	n1 := parser.nodes[1]
-	if n1.value != "world" {
-		t.Errorf("Expected world, got %s", parser.nodes[1].value)
+	if n1.Val != "world" {
+		t.Errorf("Expected world, got %s", parser.nodes[1].Val)
 	}
 
-	if n1.nodeType != italic {
-		t.Errorf("Expected italic, got %s", parser.nodes[1].nodeType)
+	if n1.Type != italic {
+		t.Errorf("Expected italic, got %s", parser.nodes[1].Type)
 	}
 }
 
@@ -135,21 +135,21 @@ func TestMonospaceSimple(t *testing.T) {
 	}
 
 	n0 := parser.nodes[0]
-	if n0.value != "Hello " {
-		t.Errorf("Expected Hello, got %s", parser.nodes[0].value)
+	if n0.Val != "Hello " {
+		t.Errorf("Expected Hello, got %s", parser.nodes[0].Val)
 	}
 
-	if n0.nodeType != text {
-		t.Errorf("Expected text, got %s", parser.nodes[0].nodeType)
+	if n0.Type != text {
+		t.Errorf("Expected text, got %s", parser.nodes[0].Type)
 	}
 
 	n1 := parser.nodes[1]
-	if n1.value != "world" {
-		t.Errorf("Expected world, got %s", parser.nodes[1].value)
+	if n1.Val != "world" {
+		t.Errorf("Expected world, got %s", parser.nodes[1].Val)
 	}
 
-	if n1.nodeType != monospace {
-		t.Errorf("Expected monospace, got %s", parser.nodes[1].nodeType)
+	if n1.Type != monospace {
+		t.Errorf("Expected monospace, got %s", parser.nodes[1].Type)
 	}
 }
 
@@ -160,12 +160,12 @@ func TestPreformattedSimple(t *testing.T) {
 	parser.Parse()
 
 	n0 := parser.nodes[0]
-	if n0.value != "**Hello world**" {
-		t.Errorf("Expected **Hello world**, got %s", parser.nodes[0].value)
+	if n0.Val != "**Hello world**" {
+		t.Errorf("Expected **Hello world**, got %s", parser.nodes[0].Val)
 	}
 
-	if n0.nodeType != preformatted {
-		t.Errorf("Expected preformatted, got %s", parser.nodes[0].nodeType)
+	if n0.Type != preformatted {
+		t.Errorf("Expected preformatted, got %s", parser.nodes[0].Type)
 	}
 }
 
