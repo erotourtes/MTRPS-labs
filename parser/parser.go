@@ -20,6 +20,16 @@ type node struct {
 	nodeType string
 }
 
+type ParserError struct {
+	line int
+	col  int
+	msg  string
+}
+
+func (p *ParserError) Error() string {
+	return fmt.Sprintf("Error at line %d, col %d: %s", p.line, p.col, p.msg)
+}
+
 type MarkdownParser struct {
 	input []string
 	nodes []node
@@ -70,11 +80,15 @@ func MarkdownParserInit(input string) *MarkdownParser {
 	return &MarkdownParser{input: strings.Split(input, "\n"), nodes: []node{}}
 }
 
-func (m *MarkdownParser) Parse() error {
+func (m *MarkdownParser) error(msg string) *ParserError {
+	return &ParserError{line: m.getLine() + 1, col: m.getCol() + 1, msg: msg}
+}
+
+func (m *MarkdownParser) Parse() *ParserError {
 	for ; m.getLine() < len(m.input); m.incrementLine() {
 		runes := m.curLineRunes()
 		for m.getCol() < len(runes) {
-			var err error
+			var err *ParserError
 			switch true {
 			case m.isStartOfPreformatted():
 				err = m.parsePreformatted()
@@ -145,7 +159,7 @@ func (m *MarkdownParser) isStartOfPreformatted() bool {
 	return strings.HasPrefix(string(runes), "```")
 }
 
-func (m *MarkdownParser) parseTilda(runes []rune) error {
+func (m *MarkdownParser) parseTilda(runes []rune) *ParserError {
 	start := m.getCol() + 1 // skip the first tilda
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
@@ -156,14 +170,14 @@ func (m *MarkdownParser) parseTilda(runes []rune) error {
 		}
 
 		if !unicode.IsLetter(ch) && ch != ' ' {
-			return fmt.Errorf("invalid character in ` at line")
+			return m.error("Invalid character in `")
 		}
 	}
 
-	return fmt.Errorf("no closing ` found at line")
+	return m.error("No closing ` found")
 }
 
-func (m *MarkdownParser) parseStar(runes []rune) error {
+func (m *MarkdownParser) parseStar(runes []rune) *ParserError {
 	start := m.getCol() + 2 // skip the first two stars
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
@@ -174,14 +188,14 @@ func (m *MarkdownParser) parseStar(runes []rune) error {
 		}
 
 		if !unicode.IsLetter(ch) && ch != ' ' {
-			return fmt.Errorf("Invalid character in ** at line")
+			return m.error("Invalid character in **")
 		}
 	}
 
-	return fmt.Errorf("no closing ** found at line")
+	return m.error("No closing ** found")
 }
 
-func (m *MarkdownParser) parseUnderscore(runes []rune) error {
+func (m *MarkdownParser) parseUnderscore(runes []rune) *ParserError {
 	start := m.getCol() + 1 // skip the first underscore
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
@@ -192,11 +206,11 @@ func (m *MarkdownParser) parseUnderscore(runes []rune) error {
 		}
 
 		if !unicode.IsLetter(ch) && ch != ' ' {
-			return fmt.Errorf("Invalid character in ** at line")
+			return m.error("Invalid character in _")
 		}
 	}
 
-	return fmt.Errorf("no closing ** found at line")
+	return m.error("No closing _ found")
 }
 
 func (m *MarkdownParser) parseText(runes []rune) {
@@ -214,19 +228,18 @@ func (m *MarkdownParser) parseText(runes []rune) {
 	m.setCol(len(runes))
 }
 
-func (m *MarkdownParser) parsePreformatted() error {
+func (m *MarkdownParser) parsePreformatted() *ParserError {
 	lineIdx := m.getLine()
 	line := m.input[lineIdx]
 	if len(line) < 3 {
-		return fmt.Errorf("invalid preformatted block at line")
+		return m.error("Invalid preformatted block")
 	}
 
 	for i := m.getLine() + 1; i < len(m.input); i++ {
-		m.setLine(i)
 		line = m.input[i]
 		if strings.HasPrefix(line, "```") {
 			if len(line) > 3 {
-				return fmt.Errorf("invalid preformatted block at line %d", i+1)
+				return m.error("Invalid preformatted block")
 			}
 			m.nodes = append(
 				m.nodes,
@@ -236,5 +249,5 @@ func (m *MarkdownParser) parsePreformatted() error {
 		}
 	}
 
-	return fmt.Errorf("no closing ``` found at line %d", lineIdx+1)
+	return m.error("No closing ``` found")
 }
