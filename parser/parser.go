@@ -56,15 +56,16 @@ func (m *MarkdownParser) Parse() error {
 		runes := m.curLineRunes()
 		for m.pos.col < len(runes) {
 			var err error
-			if m.isStartOfPreformatted() {
+			switch true {
+			case m.isStartOfPreformatted():
 				err = m.parsePreformatted()
-			} else if m.isStartOfBold() {
+			case m.isStartOfBold():
 				err = m.parseStar(runes)
-			} else if m.isStartOfItalic() {
+			case m.isStartOfItalic():
 				err = m.parseUnderscore(runes)
-			} else if m.isStartOfMonospace() {
+			case m.isStartOfMonospace():
 				err = m.parseTilda(runes)
-			} else {
+			default:
 				m.parseText(runes)
 			}
 			if err != nil {
