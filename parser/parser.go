@@ -11,6 +11,7 @@ const (
 	text      = "text"
 	lineBreak = "lineBreak"
 	italic    = "i"
+	monospace = "tt"
 )
 
 type node struct {
@@ -41,6 +42,12 @@ func (m *MarkdownParser) Parse() error {
 				curIdx = offset
 			} else if isStartOfItalic(runes[curIdx:]) {
 				offset, err := m.parseUnderscore(runes, lineIdx, curIdx)
+				if err != nil {
+					return err
+				}
+				curIdx = offset
+			} else if isStartOfMonospace(runes[curIdx:]) {
+				offset, err := m.parseTilda(runes, lineIdx, curIdx)
 				if err != nil {
 					return err
 				}
@@ -83,6 +90,31 @@ func isStartOfItalic(runes []rune) bool {
 	}
 
 	return runes[0] == '_' && unicode.IsLetter(runes[1])
+}
+
+func isStartOfMonospace(runes []rune) bool {
+	if len(runes) < 2 {
+		return false
+	}
+
+	return runes[0] == '`' && unicode.IsLetter(runes[1])
+}
+
+func (m *MarkdownParser) parseTilda(runes []rune, lineIdx int, startOffset int) (int, error) {
+	start := startOffset + 1 // skip the first tilda
+	for i := start; i < len(runes); i++ {
+		ch := runes[i]
+		if ch == '`' {
+			m.nodes = append(m.nodes, node{value: string(runes[start:i]), nodeType: monospace})
+			return i + 1, nil
+		}
+
+		if !unicode.IsLetter(ch) && ch != ' ' {
+			return i, fmt.Errorf("Invalid character in ` at line %d, %d ", lineIdx+1, i)
+		}
+	}
+
+	return start, fmt.Errorf("no closing ` found at line %d, %d", lineIdx+1, startOffset)
 }
 
 func (m *MarkdownParser) parseStar(runes []rune, lineIdx int, startOffset int) (int, error) {
