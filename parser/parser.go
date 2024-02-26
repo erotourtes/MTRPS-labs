@@ -10,6 +10,7 @@ const (
 	bold      = "b"
 	text      = "text"
 	lineBreak = "lineBreak"
+	italic    = "i"
 )
 
 type node struct {
@@ -34,6 +35,12 @@ func (m *MarkdownParser) Parse() error {
 		for curIdx < len(runes) {
 			if isStartOfBold(runes[curIdx:]) {
 				offset, err := m.parseStar(runes, lineIdx, curIdx)
+				if err != nil {
+					return err
+				}
+				curIdx = offset
+			} else if isStartOfItalic(runes[curIdx:]) {
+				offset, err := m.parseUnderscore(runes, lineIdx, curIdx)
 				if err != nil {
 					return err
 				}
@@ -70,6 +77,14 @@ func isStartOfBold(runes []rune) bool {
 	return runes[0] == '*' && runes[1] == '*' && (len(runes) == 2 || unicode.IsLetter(runes[2]))
 }
 
+func isStartOfItalic(runes []rune) bool {
+	if len(runes) < 2 {
+		return false
+	}
+
+	return runes[0] == '_' && unicode.IsLetter(runes[1])
+}
+
 func (m *MarkdownParser) parseStar(runes []rune, lineIdx int, startOffset int) (int, error) {
 	start := startOffset + 2 // skip the first two stars
 	for i := start; i < len(runes); i++ {
@@ -77,6 +92,23 @@ func (m *MarkdownParser) parseStar(runes []rune, lineIdx int, startOffset int) (
 		if ch == '*' && runes[i+1] == '*' {
 			m.nodes = append(m.nodes, node{value: string(runes[start:i]), nodeType: bold})
 			return i + 2, nil
+		}
+
+		if !unicode.IsLetter(ch) && ch != ' ' {
+			return i, fmt.Errorf("Invalid character in ** at line %d, %d ", lineIdx+1, i)
+		}
+	}
+
+	return start, fmt.Errorf("no closing ** found at line %d, %d", lineIdx+1, startOffset)
+}
+
+func (m *MarkdownParser) parseUnderscore(runes []rune, lineIdx int, startOffset int) (int, error) {
+	start := startOffset + 1 // skip the first underscore
+	for i := start; i < len(runes); i++ {
+		ch := runes[i]
+		if ch == '_' {
+			m.nodes = append(m.nodes, node{value: string(runes[start:i]), nodeType: italic})
+			return i + 1, nil
 		}
 
 		if !unicode.IsLetter(ch) && ch != ' ' {
