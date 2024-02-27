@@ -19,24 +19,38 @@ func Render(parser Parser) (string, error) {
 }
 
 func renderNodes(nodes []Node) string {
-	rendered := ""
+	paragraphs := []string{}
+	curParagraph := ""
+
 	for _, node := range nodes {
-		isStartOfLine := strings.HasSuffix(rendered, "\n")
-		isEmptyText := removeRepeatedSpaces(node.Val) == ""
-		if !isStartOfLine && !isEmptyText && rendered != "" {
-			rendered += " "
+		if node.Type == common.LineBreak || node.Type == common.Preformatted { // TODO
+			curParagraph = "<p>\n" + curParagraph + "\n</p>\n"
+			paragraphs = append(paragraphs, curParagraph)
+			curParagraph = ""
 		}
-		rendered += wrapIntoTag(&node)
+
+		isStartOfLine := strings.HasSuffix(curParagraph, "\n")
+		isEmptyText := removeRepeatedSpaces(node.Val) == ""
+		if !isStartOfLine && !isEmptyText && curParagraph != "" {
+			curParagraph += " "
+		}
+		curParagraph += wrapIntoTag(&node)
 	}
 
-	return "<p>\n" + rendered + "\n</p>\n"
+	if curParagraph != "" {
+		paragraphs = append(paragraphs, "<p>\n"+curParagraph+"\n</p>\n")
+	}
+
+	return strings.Join(paragraphs, "\n")
 }
 
-func wrapIntoTag(n *Node) string {
+func wrapIntoTag(n *Node) string { // TODO
 	if n.Type == common.LineBreak {
 		return "\n</p>\n<p>\n"
 	} else if n.Type == common.Text {
 		return removeRepeatedSpaces(n.Val)
+	} else if n.Type == common.Preformatted {
+		return "<" + n.Type + ">\n" + n.Val + "\n</" + n.Type + ">"
 	}
 	return "<" + n.Type + ">" + removeRepeatedSpaces(n.Val) + "</" + n.Type + ">"
 }

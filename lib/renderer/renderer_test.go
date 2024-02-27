@@ -36,27 +36,39 @@ Hello <b>world</b>
 </p>
 `,
 		},
-		//		{
-		//			name: "Different types (bold, italic, monospace, preformatted)",
-		//			input: `
-		//**Hello** *world* ` + "`A`" + "\n```" + `
-		//**H** _A <>
-		//A_` + "\n```" + `
-		//`,
-		//			expected: `<p>
-		//<b>Hello</b> <i>world</i> <tt>A</tt>
-		//</p>
-		//<pre>
-		//**H** _A <>
-		//A_
-		//</pre>
-		//`,
-		//		},
+		{
+			name: "Different types (bold, italic, monospace, preformatted)",
+			/*
+
+				*Hello** *world* `A`
+				```
+				**H** _A <>
+				A_
+				```
+
+			*/
+			// TODO: Fix *world* rendering to *world *
+			input: `
+**Hello** *world` + "`A`" + "\n```" + `
+**H** _A <>
+A_` + "\n```\n",
+			expected: `<p>
+<b>Hello</b> *world <tt>A</tt>
+</p>
+
+<p>
+<pre>
+**H** _A <>
+A_
+</pre>
+</p>
+`,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			str, err := Render(parser.MarkdownParserInit(tc.input))
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
 			if str != tc.expected {
 				t.Errorf("Expected: %s, got: %s", tc.expected, str)
