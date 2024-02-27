@@ -155,11 +155,11 @@ func TestMonospaceSimple(t *testing.T) {
 
 func TestPreformattedSimple(t *testing.T) {
 	content :=
-		"```\n**Hello world**\n```"
+		"text```\n**Hello world**\n```"
 	parser := MarkdownParserInit(content)
 	parser.Parse()
 
-	n0 := parser.nodes[0]
+	n0 := parser.nodes[1]
 	if n0.Val != "**Hello world**" {
 		t.Errorf("Expected **Hello world**, got %s", parser.nodes[0].Val)
 	}
