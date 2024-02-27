@@ -259,6 +259,7 @@ func (m *MarkdownParser) parsePreformatted() *ParserError {
 				m.nodes,
 				Node{Val: strings.Join(m.input[lineIdx+1:i], "\n"), Type: preformatted})
 			m.setLine(i)
+			m.setCol(3) // skip the closing ```
 			return nil
 		}
 	}
