@@ -2,21 +2,19 @@ package parser
 
 import (
 	"fmt"
-	"mainmod/renderer"
+	"mainmod/lib/common"
 	"strings"
 	"unicode"
 )
 
-type Node = renderer.Node
+type Node = common.Node
 
-const (
-	bold         = "b"
-	text         = "text"
-	lineBreak    = "lineBreak"
-	italic       = "i"
-	monospace    = "tt"
-	preformatted = "pre"
-)
+const lineBreak = common.LineBreak
+const bold = common.Bold
+const text = common.Text
+const italic = common.Italic
+const monospace = common.Monospace
+const preformatted = common.Preformatted
 
 type ParserError struct {
 	line int
