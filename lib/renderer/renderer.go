@@ -21,10 +21,15 @@ func Render(parser Parser) (string, error) {
 func renderNodes(nodes []Node) string {
 	rendered := ""
 	for _, node := range nodes {
+		isStartOfLine := strings.HasSuffix(rendered, "\n")
+		isEmptyText := removeRepeatedSpaces(node.Val) == ""
+		if !isStartOfLine && !isEmptyText && rendered != "" {
+			rendered += " "
+		}
 		rendered += wrapIntoTag(&node)
 	}
 
-	return "<p>\n" + rendered + "</p>\n"
+	return "<p>\n" + rendered + "\n</p>\n"
 }
 
 func wrapIntoTag(n *Node) string {
@@ -32,7 +37,6 @@ func wrapIntoTag(n *Node) string {
 		return "\n</p>\n<p>\n"
 	} else if n.Type == common.Text {
 		return removeRepeatedSpaces(n.Val)
-
 	}
 	return "<" + n.Type + ">" + removeRepeatedSpaces(n.Val) + "</" + n.Type + ">"
 }
