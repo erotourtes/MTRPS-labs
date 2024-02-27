@@ -27,3 +27,8 @@ go build -o mp main.go
 # or 
 go run main.go --out <output file> <input file>
 ```
+
+## Revert commit 
+`4f0398e79b987a75ff38cd74ba137acfa10cd4f1`  
+[Github](https://github.com/erotourtes/MTRPS-labs/commit/4f0398e79b987a75ff38cd74ba137acfa10cd4f1)
+
