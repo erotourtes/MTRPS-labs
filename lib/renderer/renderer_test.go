@@ -29,8 +29,9 @@ Hello <b>world</b>
 
 `,
 			expected: `<p>
-<b>Hello</b> *world
+<b>Hello</b> *world 
 </p>
+
 <p>
 <tt>A</tt>
 </p>

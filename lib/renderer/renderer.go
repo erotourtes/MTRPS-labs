@@ -44,7 +44,7 @@ func renderNodes(nodes []Node) string {
 
 func wrapIntoTag(n *Node) string { // TODO
 	if n.Type == common.LineBreak {
-		return "\n</p>\n<p>\n"
+		return ""
 	} else if n.Type == common.Text {
 		return removeRepeatedSpaces(n.Val)
 	} else if n.Type == common.Preformatted {

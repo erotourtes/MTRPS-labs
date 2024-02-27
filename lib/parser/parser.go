@@ -96,8 +96,7 @@ func (m *MarkdownParser) error(msg string) *ParserError {
 
 func (m *MarkdownParser) parse() *ParserError {
 	for ; m.getLine() < len(m.input); m.incrementLine() {
-		runes := m.curLineRunes()
-		for m.getCol() < len(runes) {
+		for m.getCol() < len(m.curLineRunes()) {
 			var err *ParserError
 			switch true {
 			case m.isStartOfPreformatted():
