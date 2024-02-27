@@ -47,13 +47,12 @@ Hello <b>world</b>
 				```
 
 			*/
-			// TODO: Fix *world* rendering to *world *
 			input: `
-**Hello** *world` + "`A`" + "\n```" + `
+**Hello** *world*` + "`A`" + "\n```" + `
 **H** _A <>
 A_` + "\n```\n",
 			expected: `<p>
-<b>Hello</b> *world <tt>A</tt>
+<b>Hello</b> *world*<tt>A</tt>
 </p>
 
 <p>

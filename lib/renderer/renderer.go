@@ -1,6 +1,9 @@
 package renderer
 
-import "strings"
+import (
+	"regexp"
+	"strings"
+)
 import "mainmod/lib/common"
 
 type Parser = common.Parser
@@ -29,11 +32,6 @@ func renderNodes(nodes []Node) string {
 			curParagraph = ""
 		}
 
-		isStartOfLine := strings.HasSuffix(curParagraph, "\n")
-		isEmptyText := removeRepeatedSpaces(node.Val) == ""
-		if !isStartOfLine && !isEmptyText && curParagraph != "" {
-			curParagraph += " "
-		}
 		curParagraph += wrapIntoTag(&node)
 	}
 
@@ -56,5 +54,7 @@ func wrapIntoTag(n *Node) string { // TODO
 }
 
 func removeRepeatedSpaces(s string) string {
-	return strings.Join(strings.Fields(s), " ")
+	re := regexp.MustCompile(`\s+`)
+	output := re.ReplaceAllString(s, " ")
+	return output
 }
