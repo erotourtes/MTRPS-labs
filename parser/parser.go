@@ -38,6 +38,19 @@ type MarkdownParser struct {
 	}
 }
 
+func (m *MarkdownParser) GetNodes() []Node {
+	return m.nodes
+}
+
+func (m *MarkdownParser) Parse() error {
+	// TODO: Wut? can't directly return the error?
+	err := m.parse()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *MarkdownParser) curStrLine() string {
 	return m.input[m.pos.line]
 }
@@ -82,7 +95,7 @@ func (m *MarkdownParser) error(msg string) *ParserError {
 	return &ParserError{line: m.getLine() + 1, col: m.getCol() + 1, msg: msg}
 }
 
-func (m *MarkdownParser) Parse() *ParserError {
+func (m *MarkdownParser) parse() *ParserError {
 	for ; m.getLine() < len(m.input); m.incrementLine() {
 		runes := m.curLineRunes()
 		for m.getCol() < len(runes) {

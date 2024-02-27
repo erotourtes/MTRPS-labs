@@ -1,12 +1,17 @@
 package main
 
+import (
+	"fmt"
+	"mainmod/parser"
+	"mainmod/renderer"
+)
+
 func main() {
-	// const path = "./README.md"
-	// content, _ := getMDContentFrom(path)
-	//content := "Hello **world**"
-	//parser := parser.MarkdownParserInit(content)
-	//parser.Parse()
-	//renderer.Render(content, &parser)
-	//
-	//fmt.Println(content)
+	content := "Hello **world**"
+	str, err := renderer.Render(content, parser.MarkdownParserInit(content))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(str)
 }

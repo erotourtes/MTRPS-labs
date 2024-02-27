@@ -35,7 +35,7 @@ func TestBoldSimple(t *testing.T) {
 func TestBoldShouldFail(t *testing.T) {
 	content := "**world"
 	parser := MarkdownParserInit(content)
-	err := parser.Parse()
+	err := parser.parse()
 	if err.col != 1 {
 		t.Errorf("Expected 1, got %d", err.col)
 	}
@@ -110,7 +110,7 @@ func TestItalicSimple(t *testing.T) {
 func TestItalicShouldFail(t *testing.T) {
 	content := "some _world"
 	parser := MarkdownParserInit(content)
-	err := parser.Parse()
+	err := parser.parse()
 	if err.col != 6 {
 		t.Errorf("Expected 6, got %d", err.col)
 	}
@@ -119,7 +119,7 @@ func TestItalicShouldFail(t *testing.T) {
 func TestItalicShouldNotFail(t *testing.T) {
 	content := "_ world"
 	parser := MarkdownParserInit(content)
-	err := parser.Parse()
+	err := parser.parse()
 	if err != nil {
 		t.Errorf("Expected nil, got %s", err)
 	}
@@ -172,7 +172,7 @@ func TestPreformattedSimple(t *testing.T) {
 func TestPreformattedShouldFail(t *testing.T) {
 	content := "some\n```\n**Hello world**\n``"
 	parser := MarkdownParserInit(content)
-	err := parser.Parse()
+	err := parser.parse()
 	if err.line != 2 || err.col != 1 {
 		t.Errorf("Expected 2, 1, got %d, %d", err.line, err.col)
 	}
