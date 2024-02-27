@@ -108,7 +108,7 @@ func TestItalicSimple(t *testing.T) {
 }
 
 func TestItalicShouldFail(t *testing.T) {
-	content := "some _world"
+	content := "some _world_a"
 	parser := MarkdownParserInit(content)
 	err := parser.parse()
 	if err.col != 6 {
