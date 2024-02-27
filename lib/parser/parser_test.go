@@ -116,6 +116,16 @@ func TestItalicShouldFail(t *testing.T) {
 	}
 }
 
+func TestItalicComplex(t *testing.T) {
+	content := "_text_is_here_"
+	parser := MarkdownParserInit(content)
+	parser.Parse()
+	nodes := parser.GetNodes()
+	if len(nodes) > 1 {
+		t.Errorf("Expected 1, got %d", len(nodes))
+	}
+}
+
 func TestItalicShouldNotFail(t *testing.T) {
 	content := "_ world"
 	parser := MarkdownParserInit(content)

@@ -212,6 +212,9 @@ func (m *MarkdownParser) parseUnderscore() *ParserError {
 	for i := start; i < len(runes); i++ {
 		ch := runes[i]
 		if ch == '_' {
+			if len(runes) > i+1 && unicode.IsLetter(runes[i+1]) {
+				continue
+			}
 			m.nodes = append(m.nodes, Node{Val: string(runes[start:i]), Type: italic})
 			m.setCol(i + 1)
 			return nil
