@@ -27,8 +27,11 @@ func renderNodes(nodes []Node) string {
 
 	for _, node := range nodes {
 		if node.Type == common.LineBreak || node.Type == common.Preformatted { // TODO
-			curParagraph = "<p>\n" + curParagraph + "\n</p>\n"
-			paragraphs = append(paragraphs, curParagraph)
+			isOnlySpaces := strings.TrimSpace(curParagraph) == ""
+			if !isOnlySpaces {
+				curParagraph = "<p>\n" + curParagraph + "\n</p>\n"
+				paragraphs = append(paragraphs, curParagraph)
+			}
 			curParagraph = ""
 		}
 

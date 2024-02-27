@@ -86,8 +86,7 @@ func (m *MarkdownParser) incrementLine() {
 }
 
 func MarkdownParserInit(input string) *MarkdownParser {
-	trimmed := strings.TrimSpace(input)
-	return &MarkdownParser{input: strings.Split(trimmed, "\n"), nodes: []Node{}}
+	return &MarkdownParser{input: strings.Split(input, "\n"), nodes: []Node{}}
 }
 
 func (m *MarkdownParser) error(msg string) *ParserError {
