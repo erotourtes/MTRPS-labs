@@ -17,6 +17,8 @@ const italic = common.Italic
 const monospace = common.Monospace
 const preformatted = common.Preformatted
 
+var orderOfHandlers = []string{preformatted, bold, italic, monospace}
+
 var mapHandlers = map[string]func(m *MarkdownParser, node *Node) *ParserError{
 	"```": (*MarkdownParser).parsePreformatted,
 	"_":   (*MarkdownParser).parseUnderscore,
@@ -138,7 +140,10 @@ func (m *MarkdownParser) parse() *ParserError {
 	node := m.root
 	for ; m.getLine() < len(m.input); m.incrementLine() {
 		for m.setCol(0); m.getCol() < len(m.curLineRunes()); {
-			for typ, handler := range mapHandlers {
+			for _, typName := range orderOfHandlers {
+				typ := mapTypesRev[typName]
+				handler := mapHandlers[typ]
+
 				if m.isStartOf(typ) {
 					err := handler(m, node)
 					if err != nil {
