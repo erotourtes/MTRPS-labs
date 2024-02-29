@@ -5,7 +5,7 @@ import (
 )
 
 func TestBoldSimple(t *testing.T) {
-	content := "Hello **world**"
+	content := "Hello'_?' **world?**"
 	parser := MarkdownParserInit(content)
 	parser.Parse()
 
@@ -14,7 +14,7 @@ func TestBoldSimple(t *testing.T) {
 	}
 
 	n0 := parser.GetNodes()[0]
-	if n0.Val != "Hello " {
+	if n0.Val != "Hello'_?' " {
 		t.Errorf("Expected Hello, got %s", parser.GetNodes()[0].Val)
 	}
 
@@ -23,7 +23,7 @@ func TestBoldSimple(t *testing.T) {
 	}
 
 	n1 := parser.GetNodes()[1]
-	if n1.Val != "world" {
+	if n1.Val != "world?" {
 		t.Errorf("Expected world, got %s", parser.GetNodes()[1].Val)
 	}
 

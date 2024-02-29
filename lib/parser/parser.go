@@ -193,6 +193,16 @@ func (m *MarkdownParser) isStartOf(typ string) bool {
 		(len(runes) > len(typ) && unicode.IsLetter(runes[len(typ)]))
 }
 
+func (m *MarkdownParser) isStartOfAnotherType() bool {
+	for typ := range mapTypes {
+		if m.isStartOf(typ) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (m *MarkdownParser) isEndOf(typ string) bool {
 	runes := m.curLineRunes()[m.getCol():]
 	if len(runes) < len(typ) {
@@ -233,10 +243,8 @@ func (m *MarkdownParser) parseDefault(typ string, parent *Node, treatEndSymbolBe
 				m.incrementColBy(len(typ)) // skip the closing symbols
 				return nil
 			}
-			// TODO: check for other start types
-			ch := runes[m.getCol()]
-			if !unicode.IsLetter(ch) && ch != ' ' {
-				return errorFor(newNode, "Invalid character in `")
+			if m.isStartOfAnotherType() {
+				return errorFor(newNode, "Nesting of types is not allowed!")
 			}
 		}
 	}
@@ -260,8 +268,7 @@ func (m *MarkdownParser) parseText(parent *Node) {
 	runes := m.curLineRunes()
 	newNode := m.newNode(text)
 	for ; m.getCol() < len(runes); m.incrementCol() {
-		ch := runes[m.getCol()]
-		if m.getCol() != newNode.Pos.Col && !unicode.IsLetter(ch) && ch != ' ' {
+		if m.getCol() != newNode.Pos.Col && m.isStartOfAnotherType() {
 			m.closeNode(newNode)
 			parent.Children = append(parent.Children, *newNode)
 			return
