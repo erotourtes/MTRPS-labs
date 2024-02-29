@@ -64,6 +64,34 @@ A_
 </p>
 `,
 		},
+		{
+			name: "Preformatted",
+			input: `
+` + "```" + `
+a
+` + "```" + `
+b
+` + "```" + `
+c
+` + "```" + `
+`,
+			expected: `<p>
+<pre>
+a
+</pre>
+</p>
+
+<p>
+b
+</p>
+
+<p>
+<pre>
+c
+</pre>
+</p>
+`,
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			str, err := Render(parser.MarkdownParserInit(tc.input))

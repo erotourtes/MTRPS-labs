@@ -29,10 +29,15 @@ func renderNodes(nodes []Node) string {
 		if node.Type == common.LineBreak || node.Type == common.Preformatted { // TODO
 			isOnlySpaces := strings.TrimSpace(curParagraph) == ""
 			if !isOnlySpaces {
-				curParagraph = "<p>\n" + curParagraph + "\n</p>\n"
+				curParagraph = wrapIntoParagraph(curParagraph)
 				paragraphs = append(paragraphs, curParagraph)
 			}
 			curParagraph = ""
+
+			if node.Type == common.Preformatted {
+				paragraphs = append(paragraphs, wrapIntoParagraph(wrapIntoTag(&node)))
+				continue
+			}
 		}
 
 		curParagraph += wrapIntoTag(&node)
@@ -43,6 +48,10 @@ func renderNodes(nodes []Node) string {
 	}
 
 	return strings.Join(paragraphs, "\n")
+}
+
+func wrapIntoParagraph(s string) string {
+	return "<p>\n" + s + "\n</p>\n"
 }
 
 func wrapIntoTag(n *Node) string { // TODO
