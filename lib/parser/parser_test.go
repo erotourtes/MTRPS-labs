@@ -155,6 +155,15 @@ func TestItalicShouldNotFail(t *testing.T) {
 	}
 }
 
+func TestItalicShouldNotFail1(t *testing.T) {
+	content := "**hello_world**"
+	parser := MarkdownParserInit(content)
+	err := parser.parse()
+	if err != nil {
+		t.Errorf("Expected nil, got %s", err)
+	}
+}
+
 func TestMonospaceSimple(t *testing.T) {
 	content := "Hello `world`"
 	parser := MarkdownParserInit(content)

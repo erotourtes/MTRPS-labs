@@ -183,6 +183,11 @@ func (m *MarkdownParser) isStartOf(typ string) bool {
 	// TODO: define start of separately
 	if typ == "```" {
 		return strings.HasPrefix(string(runes), "```")
+	} else if typ == "_" {
+		// this shouldn't be start of italic **hello_world**
+		isPrevLetterOrEmpty := m.getCol() == 0 || unicode.IsLetter(m.curLineRunes()[m.getCol()-1])
+		return !isPrevLetterOrEmpty && strings.HasPrefix(string(runes), typ) &&
+			(len(runes) > len(typ) && unicode.IsLetter(runes[len(typ)]))
 	}
 
 	if len(runes) < len(typ) {
