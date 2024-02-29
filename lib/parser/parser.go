@@ -250,6 +250,12 @@ func (m *MarkdownParser) parseDefault(typ string, parent *Node, treatEndSymbolBe
 					continue
 				}
 
+				if m.getCol() == 0 {
+					return m.error("The closing symbol is allowed only after a symbol")
+				} else if last := runes[m.getCol()-1]; last == ' ' || last == '\t' {
+					return m.error("The closing symbol is allowed only after a symbol")
+				}
+
 				m.closeNode(newNode)
 				parent.Children = append(parent.Children, *newNode)
 				m.incrementColBy(len(typ)) // skip the closing symbols
