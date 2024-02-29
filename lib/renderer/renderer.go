@@ -22,7 +22,7 @@ func Render(parser Parser) (string, error) {
 }
 
 func renderNodes(nodes []Node) string {
-	paragraphs := []string{}
+	var paragraphs []string
 	curParagraph := ""
 
 	for _, node := range nodes {
