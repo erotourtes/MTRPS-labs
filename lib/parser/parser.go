@@ -244,7 +244,7 @@ func (m *MarkdownParser) parseDefault(typ string, parent *Node, treatEndSymbolBe
 				return nil
 			}
 			if m.isStartOfAnotherType() {
-				return errorFor(newNode, "Nesting of types is not allowed!")
+				return m.error("Nesting of types is not allowed!")
 			}
 		}
 	}
