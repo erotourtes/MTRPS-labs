@@ -214,6 +214,9 @@ func (m *MarkdownParser) parseDefault(typ string, parent *Node) *ParserError {
 	typName := mapTypes[typ]
 	newNode := m.newNode(typName)
 	for ; m.getLine() < len(m.input); m.incrementLine() {
+		if m.getLine() != newNode.Pos.Line {
+			m.setCol(0) // reset the column if we are on a new line
+		}
 		runes := m.curLineRunes()
 		for ; m.getCol() < len(runes); m.incrementCol() {
 			if m.isEndOf(typ) {
@@ -246,6 +249,9 @@ func (m *MarkdownParser) parseUnderscore(parent *Node) *ParserError {
 	newNode := m.newNode(italic)
 
 	for ; m.getLine() < len(m.input); m.incrementLine() {
+		if m.getLine() != newNode.Pos.Line {
+			m.setCol(0) // reset the column if we are on a new line
+		}
 		runes := m.curLineRunes()
 		for ; m.getCol() < len(runes); m.incrementCol() {
 			if m.isEndOf("_") {
