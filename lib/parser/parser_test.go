@@ -41,6 +41,17 @@ func TestBoldSeveral(t *testing.T) {
 		t.Errorf("Expected 2 nodes, got %d", len(parser.GetNodes()))
 	}
 }
+
+func TestBoldSeveralShouldFail(t *testing.T) {
+	content := "Hello **world\n\nuniverse**"
+	parser := MarkdownParserInit(content)
+	err := parser.parse()
+
+	if err.line != 1 || err.col != 7 {
+		t.Errorf("Expected 1, 7, got %d, %d", err.line, err.col)
+	}
+}
+
 func TestBoldShouldFail(t *testing.T) {
 	content := "**world"
 	parser := MarkdownParserInit(content)

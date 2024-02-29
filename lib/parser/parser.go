@@ -209,17 +209,25 @@ func (m *MarkdownParser) closeNode(node *Node) {
 	node.Val = m.getValOf(node.Pos)
 }
 
-func (m *MarkdownParser) parseDefault(typ string, parent *Node) *ParserError {
+func (m *MarkdownParser) parseDefault(typ string, parent *Node, treatEndSymbolBeforeLetter bool) *ParserError {
 	m.incrementColBy(len(typ)) // skip the starting symbols
 	typName := mapTypes[typ]
 	newNode := m.newNode(typName)
 	for ; m.getLine() < len(m.input); m.incrementLine() {
+		if isEmptyLine := len(strings.TrimSpace(m.input[m.getLine()])) == 0; isEmptyLine {
+			return errorFor(newNode, fmt.Sprintf("No closing %s found", typ))
+		}
 		if m.getLine() != newNode.Pos.Line {
 			m.setCol(0) // reset the column if we are on a new line
 		}
 		runes := m.curLineRunes()
 		for ; m.getCol() < len(runes); m.incrementCol() {
 			if m.isEndOf(typ) {
+				// with treatEndSymbolBeforeLetter: false this is valid _hello_world_
+				if !treatEndSymbolBeforeLetter && len(runes) > m.getCol()+1 && unicode.IsLetter(runes[m.getCol()+1]) {
+					continue
+				}
+
 				m.closeNode(newNode)
 				parent.Children = append(parent.Children, *newNode)
 				m.incrementColBy(len(typ)) // skip the closing symbols
@@ -237,42 +245,15 @@ func (m *MarkdownParser) parseDefault(typ string, parent *Node) *ParserError {
 }
 
 func (m *MarkdownParser) parseTilda(parent *Node) *ParserError {
-	return m.parseDefault("`", parent)
+	return m.parseDefault("`", parent, true)
 }
 
 func (m *MarkdownParser) parseStar(parent *Node) *ParserError {
-	return m.parseDefault("**", parent)
+	return m.parseDefault("**", parent, true)
 }
 
 func (m *MarkdownParser) parseUnderscore(parent *Node) *ParserError {
-	m.incrementCol() // skip the first underscore
-	newNode := m.newNode(italic)
-
-	for ; m.getLine() < len(m.input); m.incrementLine() {
-		if m.getLine() != newNode.Pos.Line {
-			m.setCol(0) // reset the column if we are on a new line
-		}
-		runes := m.curLineRunes()
-		for ; m.getCol() < len(runes); m.incrementCol() {
-			if m.isEndOf("_") {
-				if len(runes) > m.getCol()+1 && unicode.IsLetter(runes[m.getCol()+1]) {
-					continue
-				}
-
-				m.closeNode(newNode)
-				parent.Children = append(parent.Children, *newNode)
-				m.incrementCol()
-				return nil
-			}
-
-			ch := runes[m.getCol()]
-			if !unicode.IsLetter(ch) && ch != ' ' {
-				return errorFor(newNode, "Invalid character in _")
-			}
-		}
-	}
-
-	return errorFor(newNode, "No closing _ found")
+	return m.parseDefault("_", parent, false)
 }
 
 func (m *MarkdownParser) parseText(parent *Node) {
