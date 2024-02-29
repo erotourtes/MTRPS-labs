@@ -188,6 +188,8 @@ func (m *MarkdownParser) isStartOf(typ string) bool {
 		isPrevLetterOrEmpty := m.getCol() == 0 || unicode.IsLetter(m.curLineRunes()[m.getCol()-1])
 		return !isPrevLetterOrEmpty && strings.HasPrefix(string(runes), typ) &&
 			(len(runes) > len(typ) && unicode.IsLetter(runes[len(typ)]))
+	} else if typ == "`" {
+		return strings.HasPrefix(string(runes), typ)
 	}
 
 	if len(runes) < len(typ) {
