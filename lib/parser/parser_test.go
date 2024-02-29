@@ -216,3 +216,12 @@ func TestPreformattedShouldFail(t *testing.T) {
 		t.Errorf("Expected 2, 1, got %d, %d", err.line, err.col)
 	}
 }
+
+func TestPreformattedShouldFail2(t *testing.T) {
+	content := "some```text\n```"
+	parser := MarkdownParserInit(content)
+	err := parser.Parse()
+	if err == nil {
+		t.Errorf("Expected error, got nil")
+	}
+}

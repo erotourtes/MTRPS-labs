@@ -295,7 +295,7 @@ func (m *MarkdownParser) parseText(parent *Node) {
 func (m *MarkdownParser) parsePreformatted(root *Node) *ParserError {
 	lineIdx := m.getLine()
 	line := m.input[lineIdx]
-	if len(line) < 3 {
+	if len(line) > 3 {
 		return m.error("Invalid preformatted block")
 	}
 
