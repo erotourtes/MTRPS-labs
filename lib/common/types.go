@@ -6,8 +6,18 @@ type Parser interface {
 }
 
 type Node struct {
-	Val  string
-	Type string
+	Val      string
+	Type     string
+	Children []Node
+	Pos      *Pos
+	IsClosed bool
+}
+
+type Pos struct {
+	Line    int
+	Col     int
+	EndLine int
+	EndCol  int
 }
 
 const (

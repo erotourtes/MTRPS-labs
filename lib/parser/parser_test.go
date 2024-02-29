@@ -9,26 +9,26 @@ func TestBoldSimple(t *testing.T) {
 	parser := MarkdownParserInit(content)
 	parser.Parse()
 
-	if len(parser.nodes) != 2 {
-		t.Errorf("Expected 2 nodes, got %d", len(parser.nodes))
+	if len(parser.GetNodes()) != 2 {
+		t.Errorf("Expected 2 nodes, got %d", len(parser.GetNodes()))
 	}
 
-	n0 := parser.nodes[0]
+	n0 := parser.GetNodes()[0]
 	if n0.Val != "Hello " {
-		t.Errorf("Expected Hello, got %s", parser.nodes[0].Val)
+		t.Errorf("Expected Hello, got %s", parser.GetNodes()[0].Val)
 	}
 
 	if n0.Type != text {
-		t.Errorf("Expected text, got %s", parser.nodes[0].Type)
+		t.Errorf("Expected text, got %s", parser.GetNodes()[0].Type)
 	}
 
-	n1 := parser.nodes[1]
+	n1 := parser.GetNodes()[1]
 	if n1.Val != "world" {
-		t.Errorf("Expected world, got %s", parser.nodes[1].Val)
+		t.Errorf("Expected world, got %s", parser.GetNodes()[1].Val)
 	}
 
 	if n1.Type != bold {
-		t.Errorf("Expected bold, got %s", parser.nodes[1].Type)
+		t.Errorf("Expected bold, got %s", parser.GetNodes()[1].Type)
 	}
 }
 
@@ -60,8 +60,8 @@ some text`
 	parser := MarkdownParserInit(content)
 	parser.Parse()
 
-	if len(parser.nodes) != 5 {
-		t.Errorf("Expected 5 nodes, got %d", len(parser.nodes))
+	if len(parser.GetNodes()) != 5 {
+		t.Errorf("Expected 5 nodes, got %d", len(parser.GetNodes()))
 	}
 }
 
@@ -74,8 +74,8 @@ some text`
 	parser := MarkdownParserInit(content)
 	parser.Parse()
 
-	if len(parser.nodes) != 5 {
-		t.Errorf("Expected 5 nodes, got %d", len(parser.nodes))
+	if len(parser.GetNodes()) != 5 {
+		t.Errorf("Expected 5 nodes, got %d", len(parser.GetNodes()))
 	}
 }
 
@@ -84,26 +84,26 @@ func TestItalicSimple(t *testing.T) {
 	parser := MarkdownParserInit(content)
 	parser.Parse()
 
-	if len(parser.nodes) != 2 {
-		t.Errorf("Expected 2 nodes, got %d", len(parser.nodes))
+	if len(parser.GetNodes()) != 2 {
+		t.Errorf("Expected 2 nodes, got %d", len(parser.GetNodes()))
 	}
 
-	n0 := parser.nodes[0]
+	n0 := parser.GetNodes()[0]
 	if n0.Val != "Hello " {
-		t.Errorf("Expected Hello, got %s", parser.nodes[0].Val)
+		t.Errorf("Expected Hello, got %s", parser.GetNodes()[0].Val)
 	}
 
 	if n0.Type != text {
-		t.Errorf("Expected text, got %s", parser.nodes[0].Type)
+		t.Errorf("Expected text, got %s", parser.GetNodes()[0].Type)
 	}
 
-	n1 := parser.nodes[1]
+	n1 := parser.GetNodes()[1]
 	if n1.Val != "world" {
-		t.Errorf("Expected world, got %s", parser.nodes[1].Val)
+		t.Errorf("Expected world, got %s", parser.GetNodes()[1].Val)
 	}
 
 	if n1.Type != italic {
-		t.Errorf("Expected italic, got %s", parser.nodes[1].Type)
+		t.Errorf("Expected italic, got %s", parser.GetNodes()[1].Type)
 	}
 }
 
@@ -140,42 +140,42 @@ func TestMonospaceSimple(t *testing.T) {
 	parser := MarkdownParserInit(content)
 	parser.Parse()
 
-	if len(parser.nodes) != 2 {
-		t.Errorf("Expected 2 nodes, got %d", len(parser.nodes))
+	if len(parser.GetNodes()) != 2 {
+		t.Errorf("Expected 2 nodes, got %d", len(parser.GetNodes()))
 	}
 
-	n0 := parser.nodes[0]
+	n0 := parser.GetNodes()[0]
 	if n0.Val != "Hello " {
-		t.Errorf("Expected Hello, got %s", parser.nodes[0].Val)
+		t.Errorf("Expected Hello, got %s", parser.GetNodes()[0].Val)
 	}
 
 	if n0.Type != text {
-		t.Errorf("Expected text, got %s", parser.nodes[0].Type)
+		t.Errorf("Expected text, got %s", parser.GetNodes()[0].Type)
 	}
 
-	n1 := parser.nodes[1]
+	n1 := parser.GetNodes()[1]
 	if n1.Val != "world" {
-		t.Errorf("Expected world, got %s", parser.nodes[1].Val)
+		t.Errorf("Expected world, got %s", parser.GetNodes()[1].Val)
 	}
 
 	if n1.Type != monospace {
-		t.Errorf("Expected monospace, got %s", parser.nodes[1].Type)
+		t.Errorf("Expected monospace, got %s", parser.GetNodes()[1].Type)
 	}
 }
 
 func TestPreformattedSimple(t *testing.T) {
 	content :=
-		"text```\n**Hello world**\n```"
+		"text\n```\n**Hello world**\n```"
 	parser := MarkdownParserInit(content)
 	parser.Parse()
 
-	n0 := parser.nodes[1]
+	n0 := parser.GetNodes()[1]
 	if n0.Val != "**Hello world**" {
-		t.Errorf("Expected **Hello world**, got %s", parser.nodes[0].Val)
+		t.Errorf("Expected **Hello world**, got %s", parser.GetNodes()[0].Val)
 	}
 
 	if n0.Type != preformatted {
-		t.Errorf("Expected preformatted, got %s", parser.nodes[0].Type)
+		t.Errorf("Expected preformatted, got %s", parser.GetNodes()[0].Type)
 	}
 }
 

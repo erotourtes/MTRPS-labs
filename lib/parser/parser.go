@@ -8,6 +8,7 @@ import (
 )
 
 type Node = common.Node
+type Pos = common.Pos
 
 const lineBreak = common.LineBreak
 const bold = common.Bold
@@ -15,6 +16,27 @@ const text = common.Text
 const italic = common.Italic
 const monospace = common.Monospace
 const preformatted = common.Preformatted
+
+var mapHandlers = map[string]func(m *MarkdownParser, node *Node) *ParserError{
+	"```": (*MarkdownParser).parsePreformatted,
+	"_":   (*MarkdownParser).parseUnderscore,
+	"**":  (*MarkdownParser).parseStar,
+	"`":   (*MarkdownParser).parseTilda,
+}
+
+var mapTypes = map[string]string{
+	"```": preformatted,
+	"**":  bold,
+	"_":   italic,
+	"`":   monospace,
+}
+
+var mapTypesRev = map[string]string{
+	preformatted: "```",
+	bold:         "**",
+	italic:       "_",
+	monospace:    "`",
+}
 
 type ParserError struct {
 	line int
@@ -28,16 +50,11 @@ func (p *ParserError) Error() string {
 
 type MarkdownParser struct {
 	input []string
-	nodes []Node
-
-	pos struct {
-		line int
-		col  int
-	}
+	root  *Node
 }
 
 func (m *MarkdownParser) GetNodes() []Node {
-	return m.nodes
+	return m.root.Children
 }
 
 func (m *MarkdownParser) Parse() error {
@@ -50,220 +67,253 @@ func (m *MarkdownParser) Parse() error {
 }
 
 func (m *MarkdownParser) curStrLine() string {
-	return m.input[m.pos.line]
+	return m.input[m.root.Pos.Line]
 }
 
 func (m *MarkdownParser) curLineRunes() []rune {
 	return []rune(m.curStrLine())
 }
 
-func (m *MarkdownParser) lastNodeType() string {
-	l := len(m.nodes)
-	if l == 0 {
-		return ""
-	}
-	return m.nodes[l-1].Type
-}
-
 func (m *MarkdownParser) getLine() int {
-	return m.pos.line
+	return m.root.Pos.Line
 }
 
 func (m *MarkdownParser) getCol() int {
-	return m.pos.col
+	return m.root.Pos.Col
 }
 
 func (m *MarkdownParser) setLine(line int) {
-	m.pos.line = line
+	m.root.Pos.Line = line
 }
 
 func (m *MarkdownParser) setCol(col int) {
-	m.pos.col = col
+	m.root.Pos.Col = col
 }
 
 func (m *MarkdownParser) incrementLine() {
-	m.pos.line++
+	m.root.Pos.Line++
+}
+
+func (m *MarkdownParser) incrementColBy(val int) {
+	m.root.Pos.Col += val
+}
+
+func (m *MarkdownParser) incrementCol() {
+	m.incrementColBy(1)
 }
 
 func MarkdownParserInit(input string) *MarkdownParser {
-	return &MarkdownParser{input: strings.Split(input, "\n"), nodes: []Node{}}
+	return &MarkdownParser{input: strings.Split(input, "\n"), root: &Node{Type: "root", Children: []Node{}, Pos: &Pos{Line: 0, Col: 0, EndLine: 0, EndCol: 0}}}
+}
+
+func errorFor(node *Node, msg string) *ParserError {
+	typLen := len(mapTypesRev[node.Type])
+	return &ParserError{line: node.Pos.Line + 1, col: node.Pos.Col + 1 - typLen, msg: msg}
 }
 
 func (m *MarkdownParser) error(msg string) *ParserError {
 	return &ParserError{line: m.getLine() + 1, col: m.getCol() + 1, msg: msg}
 }
 
+/*
+Works without taking to account inner nodes (because there will be none as defined in the task description)
+*/
+func (m *MarkdownParser) lastNodeType() string {
+	if len(m.root.Children) == 0 {
+		return ""
+	}
+	return m.root.Children[len(m.root.Children)-1].Type
+}
+
+func (m *MarkdownParser) newNode(typ string) *Node {
+	return &Node{Type: typ, Children: []Node{}, Pos: &Pos{
+		Line:    m.getLine(),
+		Col:     m.getCol(),
+		EndLine: m.getLine(),
+		EndCol:  m.getCol(),
+	}}
+}
+
 func (m *MarkdownParser) parse() *ParserError {
+	node := m.root
 	for ; m.getLine() < len(m.input); m.incrementLine() {
-		for m.getCol() < len(m.curLineRunes()) {
-			var err *ParserError
-			switch true {
-			case m.isStartOfPreformatted():
-				err = m.parsePreformatted()
-			case m.isStartOfBold():
-				err = m.parseStar()
-			case m.isStartOfItalic():
-				err = m.parseUnderscore()
-			case m.isStartOfMonospace():
-				err = m.parseTilda()
-			default:
-				m.parseText()
+		for m.setCol(0); m.getCol() < len(m.curLineRunes()); {
+			for typ, handler := range mapHandlers {
+				if m.isStartOf(typ) {
+					err := handler(m, node)
+					if err != nil {
+						return err
+					}
+					break
+				}
 			}
-			if err != nil {
-				return err
+			// none of the special types matched
+			if m.getCol() < len(m.curLineRunes()) {
+				m.parseText(node)
 			}
 		}
-
-		m.setCol(0)
 
 		if m.isLineBreak() {
 			if m.lastNodeType() == lineBreak {
 				continue
 			}
-			m.nodes = append(m.nodes, Node{Val: "", Type: lineBreak})
+			newNode := m.newNode(lineBreak)
+			m.closeNode(newNode)
+			m.root.Children = append(m.root.Children, *newNode)
 		}
 	}
 
 	return nil
 }
 
-func (m *MarkdownParser) isLineBreak() bool {
-	line := m.curStrLine()
-	if strings.HasSuffix(line, "  ") {
-		return true
+func (m *MarkdownParser) getValOf(pos *Pos) string {
+	if pos.Line == pos.EndLine {
+		return m.input[pos.Line][pos.Col:pos.EndCol]
 	}
-	return len(strings.TrimSpace(line)) == 0
+	return m.input[pos.Line][pos.Col:] + "\n" + strings.Join(m.input[pos.Line+1:pos.EndLine], "\n") + m.input[pos.EndLine][:pos.EndCol]
 }
 
-/*
-Helper function to check if the given string is the start of the md syntax
-*/
-func isStartOf(str string, runes []rune) bool {
-	if len(runes) < len(str) {
+func (m *MarkdownParser) isLineBreak() bool {
+	line := m.curStrLine()
+	return strings.HasSuffix(line, "  ") || len(strings.TrimSpace(line)) == 0
+}
+
+func (m *MarkdownParser) isStartOf(typ string) bool {
+	runes := m.curLineRunes()[m.getCol():]
+	// TODO: define start of separately
+	if typ == "```" {
+		return strings.HasPrefix(string(runes), "```")
+	}
+
+	if len(runes) < len(typ) {
 		return false
 	}
 
-	runesStr := string(runes)
-	return strings.HasPrefix(runesStr, str) && (len(runes) > len(str) && unicode.IsLetter(runes[len(str)]))
+	return strings.HasPrefix(string(runes), typ) &&
+		(len(runes) > len(typ) && unicode.IsLetter(runes[len(typ)]))
 }
 
-func (m *MarkdownParser) isStartOfBold() bool {
+func (m *MarkdownParser) isEndOf(typ string) bool {
 	runes := m.curLineRunes()[m.getCol():]
-	return isStartOf("**", runes)
-}
-
-func (m *MarkdownParser) isStartOfItalic() bool {
-	runes := m.curLineRunes()[m.getCol():]
-	return isStartOf("_", runes)
-}
-
-func (m *MarkdownParser) isStartOfMonospace() bool {
-	runes := m.curLineRunes()[m.getCol():]
-	return isStartOf("`", runes)
-}
-
-func (m *MarkdownParser) isStartOfPreformatted() bool {
-	runes := m.curLineRunes()[m.getCol():]
-	return strings.HasPrefix(string(runes), "```")
-}
-
-func (m *MarkdownParser) parseTilda() *ParserError {
-	runes := m.curLineRunes()
-	start := m.getCol() + 1 // skip the first tilda
-	for i := start; i < len(runes); i++ {
-		ch := runes[i]
-		if ch == '`' {
-			m.nodes = append(m.nodes, Node{Val: string(runes[start:i]), Type: monospace})
-			m.setCol(i + 1)
-			return nil
-		}
-
-		if !unicode.IsLetter(ch) && ch != ' ' {
-			return m.error("Invalid character in `")
-		}
+	if len(runes) < len(typ) {
+		return false
 	}
 
-	return m.error("No closing ` found")
+	return strings.HasPrefix(string(runes), typ)
 }
 
-func (m *MarkdownParser) parseStar() *ParserError {
-	runes := m.curLineRunes()
-	start := m.getCol() + 2 // skip the first two stars
-	for i := start; i < len(runes); i++ {
-		ch := runes[i]
-		if ch == '*' && runes[i+1] == '*' {
-			m.nodes = append(m.nodes, Node{Val: string(runes[start:i]), Type: bold})
-			m.setCol(i + 2)
-			return nil
-		}
-
-		if !unicode.IsLetter(ch) && ch != ' ' {
-			return m.error("Invalid character in **")
-		}
-	}
-
-	return m.error("No closing ** found")
+func (m *MarkdownParser) closeNode(node *Node) {
+	node.Pos.EndLine = m.getLine()
+	node.Pos.EndCol = m.getCol()
+	node.IsClosed = true
+	node.Val = m.getValOf(node.Pos)
 }
 
-func (m *MarkdownParser) parseUnderscore() *ParserError {
-	runes := m.curLineRunes()
-	start := m.getCol() + 1 // skip the first underscore
-	for i := start; i < len(runes); i++ {
-		ch := runes[i]
-		if ch == '_' {
-			if len(runes) > i+1 && unicode.IsLetter(runes[i+1]) {
-				continue
+func (m *MarkdownParser) parseDefault(typ string, parent *Node) *ParserError {
+	m.incrementColBy(len(typ)) // skip the starting symbols
+	typName := mapTypes[typ]
+	newNode := m.newNode(typName)
+	for ; m.getLine() < len(m.input); m.incrementLine() {
+		runes := m.curLineRunes()
+		for ; m.getCol() < len(runes); m.incrementCol() {
+			if m.isEndOf(typ) {
+				m.closeNode(newNode)
+				parent.Children = append(parent.Children, *newNode)
+				m.incrementColBy(len(typ)) // skip the closing symbols
+				return nil
 			}
-			m.nodes = append(m.nodes, Node{Val: string(runes[start:i]), Type: italic})
-			m.setCol(i + 1)
-			return nil
-		}
-
-		if !unicode.IsLetter(ch) && ch != ' ' {
-			return m.error("Invalid character in _")
+			// TODO: check for other start types
+			ch := runes[m.getCol()]
+			if !unicode.IsLetter(ch) && ch != ' ' {
+				return errorFor(newNode, "Invalid character in `")
+			}
 		}
 	}
 
-	return m.error("No closing _ found")
+	return errorFor(newNode, fmt.Sprintf("No closing %s found", typ))
 }
 
-func (m *MarkdownParser) parseText() {
+func (m *MarkdownParser) parseTilda(parent *Node) *ParserError {
+	return m.parseDefault("`", parent)
+}
+
+func (m *MarkdownParser) parseStar(parent *Node) *ParserError {
+	return m.parseDefault("**", parent)
+}
+
+func (m *MarkdownParser) parseUnderscore(parent *Node) *ParserError {
+	m.incrementCol() // skip the first underscore
+	newNode := m.newNode(italic)
+
+	for ; m.getLine() < len(m.input); m.incrementLine() {
+		runes := m.curLineRunes()
+		for ; m.getCol() < len(runes); m.incrementCol() {
+			if m.isEndOf("_") {
+				if len(runes) > m.getCol()+1 && unicode.IsLetter(runes[m.getCol()+1]) {
+					continue
+				}
+
+				m.closeNode(newNode)
+				parent.Children = append(parent.Children, *newNode)
+				m.incrementCol()
+				return nil
+			}
+
+			ch := runes[m.getCol()]
+			if !unicode.IsLetter(ch) && ch != ' ' {
+				return errorFor(newNode, "Invalid character in _")
+			}
+		}
+	}
+
+	return errorFor(newNode, "No closing _ found")
+}
+
+func (m *MarkdownParser) parseText(parent *Node) {
 	runes := m.curLineRunes()
-	startOffset := m.getCol()
-	for i := startOffset; i < len(runes); i++ {
-		ch := runes[i]
-		if i != startOffset && !unicode.IsLetter(ch) && ch != ' ' {
-			m.nodes = append(m.nodes, Node{Val: string(runes[startOffset:i]), Type: text})
-			m.setCol(i)
+	newNode := m.newNode(text)
+	for ; m.getCol() < len(runes); m.incrementCol() {
+		ch := runes[m.getCol()]
+		if m.getCol() != newNode.Pos.Col && !unicode.IsLetter(ch) && ch != ' ' {
+			m.closeNode(newNode)
+			parent.Children = append(parent.Children, *newNode)
 			return
 		}
 	}
 
-	m.nodes = append(m.nodes, Node{Val: string(runes[startOffset:]), Type: text})
+	m.closeNode(newNode)
+	parent.Children = append(parent.Children, *newNode)
 	m.setCol(len(runes))
 }
 
-func (m *MarkdownParser) parsePreformatted() *ParserError {
+func (m *MarkdownParser) parsePreformatted(root *Node) *ParserError {
 	lineIdx := m.getLine()
 	line := m.input[lineIdx]
 	if len(line) < 3 {
 		return m.error("Invalid preformatted block")
 	}
 
-	for i := m.getLine() + 1; i < len(m.input); i++ {
-		line = m.input[i]
+	m.incrementLine() // skip the opening ```
+	newNode := m.newNode(preformatted)
+
+	for ; m.getLine() < len(m.input); m.incrementLine() {
+		line = m.input[m.getLine()]
 		if strings.HasPrefix(line, "```") {
 			if len(line) > 3 {
-				return m.error("Invalid preformatted block")
+				return m.error("Invalid ending of the preformatted block")
 			}
-			m.nodes = append(
-				m.nodes,
-				Node{Val: strings.Join(m.input[lineIdx+1:i], "\n"), Type: preformatted})
-			m.setLine(i)
+			newNode.Pos.EndLine = m.getLine() - 1
+			newNode.Pos.EndCol = len(m.input[m.getLine()-1])
+			newNode.IsClosed = true
+			newNode.Val = m.getValOf(newNode.Pos)
+
+			root.Children = append(root.Children, *newNode)
 			m.setCol(3) // skip the closing ```
 			return nil
 		}
 	}
 
-	return m.error("No closing ``` found")
+	newNode.Pos.Line -= 1 // TODO: separate for block rules to avoid this hacks
+	newNode.Pos.Col = 3
+	return errorFor(newNode, "No closing ``` found")
 }
