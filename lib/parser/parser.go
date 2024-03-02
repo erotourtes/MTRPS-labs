@@ -235,35 +235,27 @@ func (m *MarkdownParser) parseDefault(typ string, parent *Node, treatEndSymbolBe
 	m.incrementColBy(len(typ)) // skip the starting symbols
 	typName := mapTypes[typ]
 	newNode := m.newNode(typName)
-	for ; m.getLine() < len(m.input); m.incrementLine() {
-		if isEmptyLine := len(strings.TrimSpace(m.input[m.getLine()])) == 0; isEmptyLine {
-			return errorFor(newNode, fmt.Sprintf("No closing %s found", typ))
-		}
-		if m.getLine() != newNode.Pos.Line {
-			m.setCol(0) // reset the column if we are on a new line
-		}
-		runes := m.curLineRunes()
-		for ; m.getCol() < len(runes); m.incrementCol() {
-			if m.isEndOf(typ) {
-				// with treatEndSymbolBeforeLetter: false this is valid _hello_world_
-				if !treatEndSymbolBeforeLetter && len(runes) > m.getCol()+1 && unicode.IsLetter(runes[m.getCol()+1]) {
-					continue
-				}
-
-				if m.getCol() == 0 {
-					return m.error("The closing symbol is allowed only after a symbol")
-				} else if last := runes[m.getCol()-1]; last == ' ' || last == '\t' {
-					return m.error("The closing symbol is allowed only after a symbol")
-				}
-
-				m.closeNode(newNode)
-				parent.Children = append(parent.Children, *newNode)
-				m.incrementColBy(len(typ)) // skip the closing symbols
-				return nil
+	runes := m.curLineRunes()
+	for ; m.getCol() < len(runes); m.incrementCol() {
+		if m.isEndOf(typ) {
+			// with treatEndSymbolBeforeLetter: false this is valid _hello_world_
+			if !treatEndSymbolBeforeLetter && len(runes) > m.getCol()+1 && unicode.IsLetter(runes[m.getCol()+1]) {
+				continue
 			}
-			if m.isStartOfAnotherType() {
-				return m.error("Nesting of types is not allowed!")
+
+			if m.getCol() == 0 {
+				return m.error("The closing symbol is allowed only after a symbol")
+			} else if last := runes[m.getCol()-1]; last == ' ' || last == '\t' {
+				return m.error("The closing symbol is allowed only after a symbol")
 			}
+
+			m.closeNode(newNode)
+			parent.Children = append(parent.Children, *newNode)
+			m.incrementColBy(len(typ)) // skip the closing symbols
+			return nil
+		}
+		if m.isStartOfAnotherType() {
+			return m.error("Nesting of types is not allowed!")
 		}
 	}
 

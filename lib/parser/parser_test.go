@@ -35,10 +35,9 @@ func TestBoldSimple(t *testing.T) {
 func TestBoldSeveral(t *testing.T) {
 	content := "Hello **world\nuniverse**"
 	parser := MarkdownParserInit(content)
-	parser.Parse()
-
-	if len(parser.GetNodes()) != 2 {
-		t.Errorf("Expected 2 nodes, got %d", len(parser.GetNodes()))
+	err := parser.Parse()
+	if err == nil {
+		t.Errorf("Expected error, got nil")
 	}
 }
 
