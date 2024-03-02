@@ -142,9 +142,9 @@ func (m *MarkdownParser) parse() *ParserError {
 		for m.setCol(0); m.getCol() < len(m.curLineRunes()); {
 			for _, typName := range orderOfHandlers {
 				typ := mapTypesRev[typName]
-				handler := mapHandlers[typ]
 
 				if m.isStartOf(typ) {
+					handler := mapHandlers[typ]
 					err := handler(m, node)
 					if err != nil {
 						return err
