@@ -13,21 +13,16 @@ type Options struct {
 	format     string
 }
 
-func (o *Options) GetContent() string {
+func (o *Options) GetContent() (string, error) {
 	str, err := getContentFromInput(o.inputPath)
 	if err != nil {
-		fmt.Printf("Error: Can't open file '%s'", o.inputPath)
-		os.Exit(1)
+		return "", fmt.Errorf("can't open file '%s'", o.inputPath)
 	}
-	return str
+	return str, nil
 }
 
-func (o *Options) Output(content string) {
-	err := output(o.outputPath, content)
-	if err != nil {
-		fmt.Printf("Error: %s\n", err)
-		os.Exit(1)
-	}
+func (o *Options) Output(content string) error {
+	return output(o.outputPath, content)
 }
 
 var allowedFormats = map[string]bool{
@@ -58,7 +53,10 @@ func GetOptions() (*Options, error) {
 	return &options, nil
 }
 
-func ExitWithError(err error) {
+func ExitIfErr(err error) {
+	if err == nil {
+		return
+	}
 	fmt.Printf("Error: %s\n", err)
 	os.Exit(1)
 }
