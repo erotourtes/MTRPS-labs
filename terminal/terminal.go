@@ -4,13 +4,17 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 )
 
 type Options struct {
 	inputPath  string
 	outputPath string
 	format     string
+}
+
+var allowedFormats = map[string]bool{
+	"ansi": true,
+	"html": true,
 }
 
 func (o *Options) GetContent() (string, error) {
@@ -23,20 +27,6 @@ func (o *Options) GetContent() (string, error) {
 
 func (o *Options) Output(content string) error {
 	return output(o.outputPath, content)
-}
-
-var allowedFormats = map[string]bool{
-	"ansi": true,
-	"html": true,
-}
-
-func mapToStr[T any](m map[string]T) string {
-	s := new(strings.Builder)
-	for k := range m {
-		s.WriteString(fmt.Sprintf("'%s'", k))
-		s.WriteString(", ")
-	}
-	return s.String()
 }
 
 func GetOptions() (*Options, error) {

@@ -3,6 +3,7 @@ package terminal
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func getContentFromInput(path string) (string, error) {
@@ -45,4 +46,13 @@ func output(path, content string) error {
 	}
 
 	return nil
+}
+
+func mapToStr[T any](m map[string]T) string {
+	s := new(strings.Builder)
+	for k := range m {
+		s.WriteString(fmt.Sprintf("'%s'", k))
+		s.WriteString(", ")
+	}
+	return s.String()
 }
