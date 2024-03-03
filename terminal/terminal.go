@@ -14,11 +14,6 @@ type Options struct {
 	format     string
 }
 
-var allowedFormats = map[string]bool{
-	"ansi": true,
-	"html": true,
-}
-
 func (o *Options) GetContent() (string, error) {
 	str, err := getContentFromInput(o.inputPath)
 	if err != nil {
@@ -38,8 +33,8 @@ func GetOptions() (*Options, error) {
 	flag.Parse()
 	options.inputPath = flag.Arg(0)
 
-	if _, ok := allowedFormats[options.format]; !ok {
-		return nil, fmt.Errorf("unknown format '%s';\nallowed options are %s", options.format, mapToStr(allowedFormats))
+	if _, ok := renderer.MapRenderer[options.format]; !ok {
+		return nil, fmt.Errorf("unknown format '%s';\nallowed options are %s", options.format, mapToStr(renderer.MapRenderer))
 	}
 
 	if options.outputPath == "" && options.format == "" {
