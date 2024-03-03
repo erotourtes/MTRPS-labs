@@ -1,6 +1,7 @@
 package ansi
 
 import (
+	"fmt"
 	"mainmod/lib/common"
 	"strings"
 )
@@ -37,7 +38,7 @@ func renderNodes(nodes []node) string {
 		strBuilder.WriteString(wrapIntoAnsi(&node))
 	}
 
-	return strBuilder.String()
+	return strings.TrimSpace(strBuilder.String())
 }
 
 func wrapIntoAnsi(node *node) string {
