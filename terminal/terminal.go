@@ -42,6 +42,12 @@ func GetOptions() (*Options, error) {
 		return nil, fmt.Errorf("unknown format '%s';\nallowed options are %s", options.format, mapToStr(allowedFormats))
 	}
 
+	if options.outputPath == "" && options.format == "" {
+		options.format = renderer.ANSI
+	} else if options.outputPath != "" && options.format == "" {
+		options.format = renderer.HTML
+	}
+
 	return &options, nil
 }
 

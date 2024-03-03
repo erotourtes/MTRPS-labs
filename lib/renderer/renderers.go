@@ -6,7 +6,12 @@ import (
 	"mainmod/lib/renderer/html"
 )
 
+const (
+	ANSI = "ansi"
+	HTML = "html"
+)
+
 var MapRenderer = map[string]common.Renderer{
-	"ansi": ansi.Render,
-	"html": html.Render,
+	ANSI: ansi.Render,
+	HTML: html.Render,
 }
