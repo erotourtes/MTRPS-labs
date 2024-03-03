@@ -10,13 +10,12 @@ type parser = common.Parser
 type node = common.Node
 
 var mapTypeToAnsi = map[string]string{
-	common.BoldT:         "\033[1m",
-	common.TextT:         "",
-	common.LineBreakT:    "\n",
-	common.ItalicT:       "\033[3m",
-	common.MonospaceT:    "\033[7m",
-	common.PreformattedT: "\n\033[7m",
-	"reset":              "\033[0m",
+	common.BoldT:         "\033[1m%s\033[0m",
+	common.TextT:         "%s",
+	common.LineBreakT:    "%s\n",
+	common.ItalicT:       "\033[3m%s\033[0m",
+	common.MonospaceT:    "\033[7m%s\033[0m",
+	common.PreformattedT: "\n\033[7m%s\033[0m\n",
 }
 
 func Render(parser parser) (string, error) {
@@ -42,5 +41,8 @@ func renderNodes(nodes []node) string {
 }
 
 func wrapIntoAnsi(node *node) string {
-	return mapTypeToAnsi[node.Type] + node.Val + mapTypeToAnsi["reset"]
+	if node.Type == common.PreformattedT || node.Type == common.MonospaceT {
+		return fmt.Sprintf(mapTypeToAnsi[node.Type], node.Val)
+	}
+	return fmt.Sprintf(mapTypeToAnsi[node.Type], common.RemoveRepeatedSpaces(node.Val))
 }

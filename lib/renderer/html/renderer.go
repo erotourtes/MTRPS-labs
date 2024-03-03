@@ -1,10 +1,9 @@
 package html
 
 import (
-	"regexp"
+	"mainmod/lib/common"
 	"strings"
 )
-import "mainmod/lib/common"
 
 type Parser = common.Parser
 type Node = common.Node
@@ -67,17 +66,11 @@ func wrapIntoTag(n *Node) string { // TODO
 	if n.Type == common.LineBreakT {
 		return ""
 	} else if n.Type == common.TextT {
-		return removeRepeatedSpaces(n.Val)
+		return common.RemoveRepeatedSpaces(n.Val)
 	} else if n.Type == common.PreformattedT {
 		return "<" + symb(n.Type) + ">\n" + n.Val + "\n</" + symb(n.Type) + ">"
 	}
-	return "<" + symb(n.Type) + ">" + removeRepeatedSpaces(n.Val) + "</" + symb(n.Type) + ">"
-}
-
-func removeRepeatedSpaces(s string) string {
-	re := regexp.MustCompile(`\s+`)
-	output := re.ReplaceAllString(s, " ")
-	return output
+	return "<" + symb(n.Type) + ">" + common.RemoveRepeatedSpaces(n.Val) + "</" + symb(n.Type) + ">"
 }
 
 func symb(typ string) string {
