@@ -2,7 +2,7 @@ package main
 
 import (
 	"mainmod/lib/parser"
-	"mainmod/lib/renderer"
+	"mainmod/lib/renderer/html"
 	"mainmod/terminal"
 )
 
@@ -13,7 +13,7 @@ func main() {
 	c, err := opt.GetContent()
 	terminal.ExitIfErr(err)
 
-	str, err := renderer.Render(parser.MarkdownParserInit(c))
+	str, err := html.Render(parser.MarkdownParserInit(c))
 	terminal.ExitIfErr(err)
 
 	err = opt.Output(str)

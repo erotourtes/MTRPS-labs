@@ -54,7 +54,7 @@ func TestDocs4(t *testing.T) {
 		parser.Parse()
 
 		n := parser.GetNodes()[0]
-		if n.Type != italic {
+		if n.Type != italicT {
 			t.Errorf("Expected italic, got %s", n.Type)
 		}
 	})

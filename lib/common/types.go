@@ -21,10 +21,10 @@ type Pos struct {
 }
 
 const (
-	Bold         = "b"
-	Text         = "text"
-	LineBreak    = "lineBreak"
-	Italic       = "i"
-	Monospace    = "tt"
-	Preformatted = "pre"
+	BoldT         = "bold"
+	TextT         = "text"
+	LineBreakT    = "lineBreak"
+	ItalicT       = "italic"
+	MonospaceT    = "monospace"
+	PreformattedT = "preformatted"
 )
