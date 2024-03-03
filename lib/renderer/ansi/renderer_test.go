@@ -1,14 +1,9 @@
 package ansi
 
 import (
-	"mainmod/lib/common"
 	p "mainmod/lib/parser"
 	"testing"
 )
-
-func _w(type_ string, val string) string {
-	return mapTypeToAnsi[type_] + val + mapTypeToAnsi["reset"]
-}
 
 func TestRender(t *testing.T) {
 	for _, tc := range []struct {
@@ -19,18 +14,17 @@ func TestRender(t *testing.T) {
 		{
 			name:     "Simple",
 			input:    `Hello **world**!`,
-			expected: _w(common.TextT, "Hello ") + _w(common.BoldT, "world") + _w(common.TextT, "!"),
+			expected: "Hello \033[1mworld\033[0m!",
 		},
 		{
 			name:     "Different types (bold and italic)",
 			input:    `**Hello** *world  ` + "`A`",
-			expected: _w(common.BoldT, "Hello") + _w(common.TextT, " *world  ") + _w(common.MonospaceT, "A"),
+			expected: "\033[1mHello\033[0m *world \033[7mA\033[0m",
 		},
 		{
-			name:  "Preformatted",
-			input: "```\n**damn**\n```\n```\nHello\nworld\n```",
-			expected: _w(common.PreformattedT, "**damn**") +
-				_w(common.PreformattedT, "Hello\nworld"),
+			name:     "Preformatted",
+			input:    "```\n**damn**\n```\n```\nHello\nworld\n```",
+			expected: "\033[7m**damn**\033[0m\n\n\033[7mHello\nworld\033[0m",
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
