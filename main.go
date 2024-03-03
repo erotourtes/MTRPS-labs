@@ -9,7 +9,9 @@ import (
 )
 
 func main() {
-	opt := terminal.GetOptions()
+	opt, err := terminal.GetOptions()
+	terminal.ExitWithError(err)
+
 	c := opt.GetContent()
 	str, err := renderer.Render(parser.MarkdownParserInit(c))
 	if err != nil {

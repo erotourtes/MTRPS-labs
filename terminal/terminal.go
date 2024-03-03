@@ -4,11 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type Options struct {
 	inputPath  string
 	outputPath string
+	format     string
 }
 
 func (o *Options) GetContent() string {
@@ -28,11 +30,35 @@ func (o *Options) Output(content string) {
 	}
 }
 
-func GetOptions() *Options {
+var allowedFormats = map[string]bool{
+	"ansi": true,
+	"html": true,
+}
+
+func mapToStr[T any](m map[string]T) string {
+	s := new(strings.Builder)
+	for k := range m {
+		s.WriteString(fmt.Sprintf("'%s'", k))
+		s.WriteString(", ")
+	}
+	return s.String()
+}
+
+func GetOptions() (*Options, error) {
 	var options Options
 	flag.StringVar(&options.outputPath, "out", "", "Output file")
+	flag.StringVar(&options.format, "format", "ansi", "Output file")
 	flag.Parse()
 	options.inputPath = flag.Arg(0)
 
-	return &options
+	if _, ok := allowedFormats[options.format]; !ok {
+		return nil, fmt.Errorf("unknown format '%s';\nallowed options are %s", options.format, mapToStr(allowedFormats))
+	}
+
+	return &options, nil
+}
+
+func ExitWithError(err error) {
+	fmt.Printf("Error: %s\n", err)
+	os.Exit(1)
 }
