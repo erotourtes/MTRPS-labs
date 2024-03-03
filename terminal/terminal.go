@@ -3,6 +3,8 @@ package terminal
 import (
 	"flag"
 	"fmt"
+	"mainmod/lib/common"
+	"mainmod/lib/renderer"
 	"os"
 )
 
@@ -41,6 +43,11 @@ func GetOptions() (*Options, error) {
 	}
 
 	return &options, nil
+}
+
+func (o *Options) RenderWith(parser common.Parser) (string, error) {
+	rdr := renderer.MapRenderer[o.format]
+	return rdr(parser)
 }
 
 func ExitIfErr(err error) {

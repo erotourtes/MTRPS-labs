@@ -5,6 +5,8 @@ type Parser interface {
 	GetNodes() []Node
 }
 
+type Renderer func(parser Parser) (string, error)
+
 type Node struct {
 	Val      string
 	Type     string
