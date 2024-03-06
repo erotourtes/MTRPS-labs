@@ -29,7 +29,7 @@ Hello <b>world</b>
 
 `,
 			expected: `<p>
-<b>Hello</b> *world 
+<b>Hello</b> *world
 </p>
 
 <p>
@@ -54,9 +54,6 @@ Hello <b>world</b>
 A_` + "\n```\n",
 			expected: `<p>
 <b>Hello</b> *world*<tt>A</tt>
-</p>
-
-<p>
 <pre>
 **H** _A <>
 A_
@@ -71,6 +68,7 @@ A_
 a
 ` + "```" + `
 b
+
 ` + "```" + `
 c
 ` + "```" + `
@@ -79,9 +77,6 @@ c
 <pre>
 a
 </pre>
-</p>
-
-<p>
 b
 </p>
 

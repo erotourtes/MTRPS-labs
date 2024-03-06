@@ -26,18 +26,12 @@ func renderNodes(nodes []Node) string {
 	curParagraph := ""
 
 	for _, node := range nodes {
-		if node.Type == common.LineBreak || node.Type == common.Preformatted { // TODO
-			isOnlySpaces := strings.TrimSpace(curParagraph) == ""
-			if !isOnlySpaces {
+		if node.Type == common.LineBreak { // TODO
+			if isOnlySpaces := strings.TrimSpace(curParagraph) == ""; !isOnlySpaces {
 				curParagraph = wrapIntoParagraph(curParagraph)
 				paragraphs = append(paragraphs, curParagraph)
 			}
 			curParagraph = ""
-
-			if node.Type == common.Preformatted {
-				paragraphs = append(paragraphs, wrapIntoParagraph(wrapIntoTag(&node)))
-				continue
-			}
 		}
 
 		curParagraph += wrapIntoTag(&node)
@@ -51,7 +45,7 @@ func renderNodes(nodes []Node) string {
 }
 
 func wrapIntoParagraph(s string) string {
-	return "<p>\n" + s + "\n</p>\n"
+	return "<p>\n" + strings.TrimSpace(s) + "\n</p>\n"
 }
 
 func wrapIntoTag(n *Node) string { // TODO
@@ -60,7 +54,7 @@ func wrapIntoTag(n *Node) string { // TODO
 	} else if n.Type == common.Text {
 		return removeRepeatedSpaces(n.Val)
 	} else if n.Type == common.Preformatted {
-		return "<" + n.Type + ">\n" + n.Val + "\n</" + n.Type + ">"
+		return "\n<" + n.Type + ">\n" + n.Val + "\n</" + n.Type + ">\n"
 	}
 	return "<" + n.Type + ">" + removeRepeatedSpaces(n.Val) + "</" + n.Type + ">"
 }
