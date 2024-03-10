@@ -227,7 +227,7 @@ func (m *MarkdownParser) isEndOf(typ rowParserElement) bool {
 		return false
 	}
 
-	return strings.HasPrefix(string(runes), typ)
+	return strings.HasPrefix(string(runes), typ.String())
 }
 
 func (m *MarkdownParser) closeNode(node *Node) {
