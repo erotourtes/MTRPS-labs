@@ -17,23 +17,29 @@ const italicT = common.ItalicT
 const monospaceT = common.MonospaceT
 const preformattedT = common.PreformattedT
 
+type rowParserElement string
+
+func (r rowParserElement) String() string {
+	return string(r)
+}
+
 var orderOfHandlers = []string{preformattedT, boldT, italicT, monospaceT}
 
-var mapHandlers = map[string]func(m *MarkdownParser, node *Node) *ParserError{
+var mapHandlers = map[rowParserElement]func(m *MarkdownParser, node *Node) *ParserError{
 	"```": (*MarkdownParser).parsePreformatted,
 	"_":   (*MarkdownParser).parseUnderscore,
 	"**":  (*MarkdownParser).parseStar,
 	"`":   (*MarkdownParser).parseTilda,
 }
 
-var mapSymbToType = map[string]string{
+var mapSymbToType = map[rowParserElement]string{
 	"```": preformattedT,
 	"**":  boldT,
 	"_":   italicT,
 	"`":   monospaceT,
 }
 
-var mapTypeToSymb = map[string]string{
+var mapTypeToSymb = map[string]rowParserElement{
 	preformattedT: "```",
 	boldT:         "**",
 	italicT:       "_",
@@ -183,7 +189,7 @@ func (m *MarkdownParser) isLineBreak() bool {
 	return strings.HasSuffix(line, "  ") || len(strings.TrimSpace(line)) == 0
 }
 
-func (m *MarkdownParser) isStartOf(typ string) bool {
+func (m *MarkdownParser) isStartOf(typ rowParserElement) bool {
 	runes := m.curLineRunes()[m.getCol():]
 	// TODO: define start of separately
 	if typ == "```" {
@@ -191,17 +197,17 @@ func (m *MarkdownParser) isStartOf(typ string) bool {
 	} else if typ == "_" {
 		// this shouldn't be start of italic **hello_world**
 		isPrevLetter := m.getCol() > 0 && unicode.IsLetter(m.curLineRunes()[m.getCol()-1])
-		return !isPrevLetter && strings.HasPrefix(string(runes), typ) &&
+		return !isPrevLetter && strings.HasPrefix(string(runes), typ.String()) &&
 			(len(runes) > len(typ) && unicode.IsLetter(runes[len(typ)]))
 	} else if typ == "`" {
-		return strings.HasPrefix(string(runes), typ)
+		return strings.HasPrefix(string(runes), typ.String())
 	}
 
 	if len(runes) < len(typ) {
 		return false
 	}
 
-	return strings.HasPrefix(string(runes), typ) &&
+	return strings.HasPrefix(string(runes), typ.String()) &&
 		(len(runes) > len(typ) && unicode.IsLetter(runes[len(typ)]))
 }
 
@@ -215,7 +221,7 @@ func (m *MarkdownParser) isStartOfAnotherType() bool {
 	return false
 }
 
-func (m *MarkdownParser) isEndOf(typ string) bool {
+func (m *MarkdownParser) isEndOf(typ rowParserElement) bool {
 	runes := m.curLineRunes()[m.getCol():]
 	if len(runes) < len(typ) {
 		return false
@@ -231,7 +237,7 @@ func (m *MarkdownParser) closeNode(node *Node) {
 	node.Val = m.getValOf(node.Pos)
 }
 
-func (m *MarkdownParser) parseDefault(typ string, parent *Node, treatEndSymbolBeforeLetter bool) *ParserError {
+func (m *MarkdownParser) parseDefault(typ rowParserElement, parent *Node, treatEndSymbolBeforeLetter bool) *ParserError {
 	m.incrementColBy(len(typ)) // skip the starting symbols
 	typName := mapSymbToType[typ]
 	newNode := m.newNode(typName)
