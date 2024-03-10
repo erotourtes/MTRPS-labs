@@ -34,18 +34,12 @@ func renderNodes(nodes []Node) string {
 	curParagraph := ""
 
 	for _, node := range nodes {
-		if node.Type == common.LineBreakT || node.Type == common.PreformattedT { // TODO
-			isOnlySpaces := strings.TrimSpace(curParagraph) == ""
-			if !isOnlySpaces {
+		if node.Type == common.LineBreakT {
+			if isOnlySpaces := strings.TrimSpace(curParagraph) == ""; !isOnlySpaces {
 				curParagraph = wrapIntoParagraph(curParagraph)
 				paragraphs = append(paragraphs, curParagraph)
 			}
 			curParagraph = ""
-
-			if node.Type == common.PreformattedT {
-				paragraphs = append(paragraphs, wrapIntoParagraph(wrapIntoTag(&node)))
-				continue
-			}
 		}
 
 		curParagraph += wrapIntoTag(&node)
@@ -59,7 +53,7 @@ func renderNodes(nodes []Node) string {
 }
 
 func wrapIntoParagraph(s string) string {
-	return "<p>\n" + s + "\n</p>\n"
+	return "<p>\n" + strings.TrimSpace(s) + "\n</p>\n"
 }
 
 func wrapIntoTag(n *Node) string { // TODO
@@ -68,7 +62,7 @@ func wrapIntoTag(n *Node) string { // TODO
 	} else if n.Type == common.TextT {
 		return common.RemoveRepeatedSpaces(n.Val)
 	} else if n.Type == common.PreformattedT {
-		return "<" + symb(n.Type) + ">\n" + n.Val + "\n</" + symb(n.Type) + ">"
+		return "\n<" + symb(n.Type) + ">\n" + n.Val + "\n</" + symb(n.Type) + ">\n"
 	}
 	return "<" + symb(n.Type) + ">" + common.RemoveRepeatedSpaces(n.Val) + "</" + symb(n.Type) + ">"
 }
