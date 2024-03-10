@@ -10,14 +10,14 @@ import (
 type Node = common.Node
 type Pos = common.Pos
 
-const lineBreak = common.LineBreak
-const bold = common.Bold
-const text = common.Text
-const italic = common.Italic
-const monospace = common.Monospace
-const preformatted = common.Preformatted
+const lineBreakT = common.LineBreakT
+const boldT = common.BoldT
+const textT = common.TextT
+const italicT = common.ItalicT
+const monospaceT = common.MonospaceT
+const preformattedT = common.PreformattedT
 
-var orderOfHandlers = []string{preformatted, bold, italic, monospace}
+var orderOfHandlers = []string{preformattedT, boldT, italicT, monospaceT}
 
 var mapHandlers = map[string]func(m *MarkdownParser, node *Node) *ParserError{
 	"```": (*MarkdownParser).parsePreformatted,
@@ -26,18 +26,18 @@ var mapHandlers = map[string]func(m *MarkdownParser, node *Node) *ParserError{
 	"`":   (*MarkdownParser).parseTilda,
 }
 
-var mapTypes = map[string]string{
-	"```": preformatted,
-	"**":  bold,
-	"_":   italic,
-	"`":   monospace,
+var mapSymbToType = map[string]string{
+	"```": preformattedT,
+	"**":  boldT,
+	"_":   italicT,
+	"`":   monospaceT,
 }
 
-var mapTypesRev = map[string]string{
-	preformatted: "```",
-	bold:         "**",
-	italic:       "_",
-	monospace:    "`",
+var mapTypeToSymb = map[string]string{
+	preformattedT: "```",
+	boldT:         "**",
+	italicT:       "_",
+	monospaceT:    "`",
 }
 
 type ParserError struct {
@@ -109,7 +109,7 @@ func MarkdownParserInit(input string) *MarkdownParser {
 }
 
 func errorFor(node *Node, msg string) *ParserError {
-	typLen := len(mapTypesRev[node.Type])
+	typLen := len(mapTypeToSymb[node.Type])
 	return &ParserError{line: node.Pos.Line + 1, col: node.Pos.Col + 1 - typLen, msg: msg}
 }
 
@@ -141,7 +141,7 @@ func (m *MarkdownParser) parse() *ParserError {
 	for ; m.getLine() < len(m.input); m.incrementLine() {
 		for m.setCol(0); m.getCol() < len(m.curLineRunes()); {
 			for _, typName := range orderOfHandlers {
-				typ := mapTypesRev[typName]
+				typ := mapTypeToSymb[typName]
 
 				if m.isStartOf(typ) {
 					handler := mapHandlers[typ]
@@ -159,10 +159,10 @@ func (m *MarkdownParser) parse() *ParserError {
 		}
 
 		if m.isLineBreak() {
-			if m.lastNodeType() == lineBreak {
+			if m.lastNodeType() == lineBreakT {
 				continue
 			}
-			newNode := m.newNode(lineBreak)
+			newNode := m.newNode(lineBreakT)
 			m.closeNode(newNode)
 			m.root.Children = append(m.root.Children, *newNode)
 		}
@@ -206,7 +206,7 @@ func (m *MarkdownParser) isStartOf(typ string) bool {
 }
 
 func (m *MarkdownParser) isStartOfAnotherType() bool {
-	for typ := range mapTypes {
+	for typ := range mapSymbToType {
 		if m.isStartOf(typ) {
 			return true
 		}
@@ -233,7 +233,7 @@ func (m *MarkdownParser) closeNode(node *Node) {
 
 func (m *MarkdownParser) parseDefault(typ string, parent *Node, treatEndSymbolBeforeLetter bool) *ParserError {
 	m.incrementColBy(len(typ)) // skip the starting symbols
-	typName := mapTypes[typ]
+	typName := mapSymbToType[typ]
 	newNode := m.newNode(typName)
 	runes := m.curLineRunes()
 	for ; m.getCol() < len(runes); m.incrementCol() {
@@ -276,7 +276,7 @@ func (m *MarkdownParser) parseUnderscore(parent *Node) *ParserError {
 
 func (m *MarkdownParser) parseText(parent *Node) {
 	runes := m.curLineRunes()
-	newNode := m.newNode(text)
+	newNode := m.newNode(textT)
 	for ; m.getCol() < len(runes); m.incrementCol() {
 		if m.getCol() != newNode.Pos.Col && m.isStartOfAnotherType() {
 			m.closeNode(newNode)
@@ -298,7 +298,7 @@ func (m *MarkdownParser) parsePreformatted(root *Node) *ParserError {
 	}
 
 	m.incrementLine() // skip the opening ```
-	newNode := m.newNode(preformatted)
+	newNode := m.newNode(preformattedT)
 
 	for ; m.getLine() < len(m.input); m.incrementLine() {
 		line = m.input[m.getLine()]

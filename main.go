@@ -1,20 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"mainmod/lib/parser"
-	"mainmod/lib/renderer"
 	"mainmod/terminal"
-	"os"
 )
 
 func main() {
-	opt := terminal.GetOptions()
-	c := opt.GetContent()
-	str, err := renderer.Render(parser.MarkdownParserInit(c))
-	if err != nil {
-		fmt.Printf("Error: %s\n", err)
-		os.Exit(1)
-	}
-	opt.Output(str)
+	opt, err := terminal.GetOptions()
+	terminal.ExitIfErr(err)
+
+	c, err := opt.GetContent()
+	terminal.ExitIfErr(err)
+
+	str, err := opt.RenderWith(parser.MarkdownParserInit(c))
+	terminal.ExitIfErr(err)
+
+	err = opt.Output(str)
+	terminal.ExitIfErr(err)
 }

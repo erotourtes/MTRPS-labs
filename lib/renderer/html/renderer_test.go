@@ -1,4 +1,4 @@
-package renderer
+package html
 
 import (
 	"mainmod/lib/parser"

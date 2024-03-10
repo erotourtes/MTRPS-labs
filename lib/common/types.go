@@ -5,6 +5,8 @@ type Parser interface {
 	GetNodes() []Node
 }
 
+type Renderer func(parser Parser) (string, error)
+
 type Node struct {
 	Val      string
 	Type     string
@@ -21,10 +23,10 @@ type Pos struct {
 }
 
 const (
-	Bold         = "b"
-	Text         = "text"
-	LineBreak    = "lineBreak"
-	Italic       = "i"
-	Monospace    = "tt"
-	Preformatted = "pre"
+	BoldT         = "bold"
+	TextT         = "text"
+	LineBreakT    = "lineBreak"
+	ItalicT       = "italic"
+	MonospaceT    = "monospace"
+	PreformattedT = "preformatted"
 )

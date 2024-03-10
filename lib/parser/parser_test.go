@@ -18,7 +18,7 @@ func TestBoldSimple(t *testing.T) {
 		t.Errorf("Expected Hello, got %s", parser.GetNodes()[0].Val)
 	}
 
-	if n0.Type != text {
+	if n0.Type != textT {
 		t.Errorf("Expected text, got %s", parser.GetNodes()[0].Type)
 	}
 
@@ -27,7 +27,7 @@ func TestBoldSimple(t *testing.T) {
 		t.Errorf("Expected world, got %s", parser.GetNodes()[1].Val)
 	}
 
-	if n1.Type != bold {
+	if n1.Type != boldT {
 		t.Errorf("Expected bold, got %s", parser.GetNodes()[1].Type)
 	}
 }
@@ -112,7 +112,7 @@ func TestItalicSimple(t *testing.T) {
 		t.Errorf("Expected Hello, got %s", parser.GetNodes()[0].Val)
 	}
 
-	if n0.Type != text {
+	if n0.Type != textT {
 		t.Errorf("Expected text, got %s", parser.GetNodes()[0].Type)
 	}
 
@@ -121,7 +121,7 @@ func TestItalicSimple(t *testing.T) {
 		t.Errorf("Expected world, got %s", parser.GetNodes()[1].Val)
 	}
 
-	if n1.Type != italic {
+	if n1.Type != italicT {
 		t.Errorf("Expected italic, got %s", parser.GetNodes()[1].Type)
 	}
 }
@@ -177,7 +177,7 @@ func TestMonospaceSimple(t *testing.T) {
 		t.Errorf("Expected Hello, got %s", parser.GetNodes()[0].Val)
 	}
 
-	if n0.Type != text {
+	if n0.Type != textT {
 		t.Errorf("Expected text, got %s", parser.GetNodes()[0].Type)
 	}
 
@@ -186,7 +186,7 @@ func TestMonospaceSimple(t *testing.T) {
 		t.Errorf("Expected world, got %s", parser.GetNodes()[1].Val)
 	}
 
-	if n1.Type != monospace {
+	if n1.Type != monospaceT {
 		t.Errorf("Expected monospace, got %s", parser.GetNodes()[1].Type)
 	}
 }
@@ -202,7 +202,7 @@ func TestPreformattedSimple(t *testing.T) {
 		t.Errorf("Expected **Hello world**, got %s", parser.GetNodes()[0].Val)
 	}
 
-	if n0.Type != preformatted {
+	if n0.Type != preformattedT {
 		t.Errorf("Expected preformatted, got %s", parser.GetNodes()[0].Type)
 	}
 }

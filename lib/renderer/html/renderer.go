@@ -1,13 +1,21 @@
-package renderer
+package html
 
 import (
-	"regexp"
+	"mainmod/lib/common"
 	"strings"
 )
-import "mainmod/lib/common"
 
 type Parser = common.Parser
 type Node = common.Node
+
+var mapTypeToTag = map[string]string{
+	common.BoldT:         "b",
+	common.TextT:         "text",
+	common.LineBreakT:    "lineBreak",
+	common.ItalicT:       "i",
+	common.MonospaceT:    "tt",
+	common.PreformattedT: "pre",
+}
 
 func Render(parser Parser) (string, error) {
 	err := parser.Parse()
@@ -26,7 +34,7 @@ func renderNodes(nodes []Node) string {
 	curParagraph := ""
 
 	for _, node := range nodes {
-		if node.Type == common.LineBreak { // TODO
+		if node.Type == common.LineBreakT {
 			if isOnlySpaces := strings.TrimSpace(curParagraph) == ""; !isOnlySpaces {
 				curParagraph = wrapIntoParagraph(curParagraph)
 				paragraphs = append(paragraphs, curParagraph)
@@ -38,7 +46,7 @@ func renderNodes(nodes []Node) string {
 	}
 
 	if curParagraph != "" {
-		paragraphs = append(paragraphs, "<p>\n"+curParagraph+"\n</p>\n")
+		paragraphs = append(paragraphs, wrapIntoParagraph(curParagraph))
 	}
 
 	return strings.Join(paragraphs, "\n")
@@ -49,18 +57,16 @@ func wrapIntoParagraph(s string) string {
 }
 
 func wrapIntoTag(n *Node) string { // TODO
-	if n.Type == common.LineBreak {
+	if n.Type == common.LineBreakT {
 		return ""
-	} else if n.Type == common.Text {
-		return removeRepeatedSpaces(n.Val)
-	} else if n.Type == common.Preformatted {
-		return "\n<" + n.Type + ">\n" + n.Val + "\n</" + n.Type + ">\n"
+	} else if n.Type == common.TextT {
+		return common.RemoveRepeatedSpaces(n.Val)
+	} else if n.Type == common.PreformattedT {
+		return "\n<" + symb(n.Type) + ">\n" + n.Val + "\n</" + symb(n.Type) + ">\n"
 	}
-	return "<" + n.Type + ">" + removeRepeatedSpaces(n.Val) + "</" + n.Type + ">"
+	return "<" + symb(n.Type) + ">" + common.RemoveRepeatedSpaces(n.Val) + "</" + symb(n.Type) + ">"
 }
 
-func removeRepeatedSpaces(s string) string {
-	re := regexp.MustCompile(`\s+`)
-	output := re.ReplaceAllString(s, " ")
-	return output
+func symb(typ string) string {
+	return mapTypeToTag[typ]
 }
