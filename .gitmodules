@@ -1,0 +1,3 @@
+[submodule "lab3/starter-project-python"]
+	path = lab3/starter-project-python
+	url = https://github.com/KPI-FICT-MTSD/lab-03-starter-project-python
