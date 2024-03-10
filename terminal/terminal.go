@@ -29,18 +29,18 @@ func (o *Options) Output(content string) error {
 func GetOptions() (*Options, error) {
 	var options Options
 	flag.StringVar(&options.outputPath, "out", "", "Output file")
-	flag.StringVar(&options.format, "format", "ansi", "Output file")
+	flag.StringVar(&options.format, "format", "", "Format of the output (html, ansi)")
 	flag.Parse()
 	options.inputPath = flag.Arg(0)
-
-	if _, ok := renderer.MapRenderer[options.format]; !ok {
-		return nil, fmt.Errorf("unknown format '%s';\nallowed options are %s", options.format, mapToStr(renderer.MapRenderer))
-	}
 
 	if options.outputPath == "" && options.format == "" {
 		options.format = renderer.ANSI
 	} else if options.outputPath != "" && options.format == "" {
 		options.format = renderer.HTML
+	}
+
+	if _, ok := renderer.MapRenderer[options.format]; !ok {
+		return nil, fmt.Errorf("unknown format '%s';\nallowed options are %s", options.format, mapToStr(renderer.MapRenderer))
 	}
 
 	return &options, nil
