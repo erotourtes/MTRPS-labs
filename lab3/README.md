@@ -39,3 +39,25 @@ bash prepare.bash 5
 docker build -t py:5.book-w -f ./python.Dockerfile .
 docker build -t py:5.alpine -f ./4.python.Dockerfile .
 ```
+
+## GO
+### 1 (Alpine)
+[Dockerfile](./1.go.Dockerfile)
+```bash
+docker build -t go:1 -f ./1.go.Dockerfile .
+docker run --rm -p 8080:8080 go:1
+```
+
+### 2 (Alpine & Scratch)
+[Dockerfile](./2.go.Dockerfile)
+```bash
+docker build -t go:2 -f ./2.go.Dockerfile .
+docker run --rm -p 8080:8080 go:2
+```
+
+### 3 (Alpine & gcr.io/distroless/static-debian11)
+[Dockerfile](./3.go.Dockerfile)
+```bash
+docker build -t go:3 -f ./3.go.Dockerfile .
+docker run --rm -p 8080:8080 go:3
+```
