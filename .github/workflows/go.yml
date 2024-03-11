@@ -3,12 +3,13 @@ name: GOing to test
 on:
   push:
     branches: [ "main" ]
+    paths: ["lab1-2/**"]
   pull_request:
     branches: [ "main" ]
+    paths: ["lab1-2/**"]
 
 jobs:
-
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
