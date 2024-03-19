@@ -80,4 +80,4 @@ def matrix() -> dict:
 EOF
 fi
 
-pip install -r $file --upgrade
+#pip install -r $file --upgrade
