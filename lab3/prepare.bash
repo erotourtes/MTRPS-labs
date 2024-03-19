@@ -32,6 +32,17 @@ watchfiles==0.21.0
 websockets==12.0
 EOF
 
+cat > $api_file << EOF
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get('')
+def hello_world() -> dict:
+    return {'msg': 'Hello, World!'}
+EOF
+
 elif [ "$1" -eq 5 ]; then
 cat > $file << EOF
 annotated-types==0.6.0
